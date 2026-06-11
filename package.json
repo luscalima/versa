@@ -4,12 +4,15 @@
   "private": true,
   "scripts": {
     "build": "nuxt build",
-    "dev": "nuxt dev",
+    "dev": "bun services:up && nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "test": "bunx vitest",
-    "test:watch": "bunx vitest --watch"
+    "test:watch": "bunx vitest --watch",
+    "services:up": "docker compose up -d",
+    "services:stop": "docker compose stop",
+    "services:down": "docker compose down"
   },
   "dependencies": {
     "@lucide/vue": "^1.17.0",
