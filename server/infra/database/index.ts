@@ -19,6 +19,7 @@ export function createDatabase(config: DatabaseConfig): Database {
       user: config.user,
       password: config.password,
       database: config.name,
+      ssl: { rejectUnauthorized: false },
     },
   })
 }
