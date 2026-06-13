@@ -7,8 +7,7 @@ declare module 'nitropack' {
 }
 
 export default defineNitroPlugin((nitroApp) => {
-  const config = useRuntimeConfig()
-  const database = createDatabase(config.database)
+  const database = createDatabase()
 
   nitroApp.database = database
 

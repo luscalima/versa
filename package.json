@@ -12,7 +12,10 @@
     "test:watch": "bunx vitest --watch",
     "services:up": "docker compose up -d",
     "services:stop": "docker compose stop",
-    "services:down": "docker compose down"
+    "services:down": "docker compose down",
+    "migrate:create": "bun node_modules/.bin/knex migrate:make",
+    "migrate:latest": "bun node_modules/.bin/knex migrate:latest",
+    "migrate:rollback": "bun node_modules/.bin/knex migrate:rollback"
   },
   "dependencies": {
     "@lucide/vue": "^1.17.0",

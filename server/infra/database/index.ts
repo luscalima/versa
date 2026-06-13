@@ -1,27 +1,8 @@
 import knex, { type Knex } from 'knex'
-
-interface DatabaseConfig {
-  host: string
-  port: number
-  user: string
-  password: string
-  name: string
-}
+import knexConfig from '../../../knexfile'
 
 export type Database = Knex
 
-export function createDatabase(config: DatabaseConfig): Database {
-  return knex({
-    client: 'pg',
-    connection: {
-      host: config.host,
-      port: config.port,
-      user: config.user,
-      password: config.password,
-      database: config.name,
-      ssl: process.env.NODE_ENV === 'development' ?
-        false :
-        { rejectUnauthorized: true },
-    },
-  })
+export function createDatabase(): Database {
+  return knex(knexConfig)
 }
