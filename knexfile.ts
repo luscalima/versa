@@ -1,4 +1,3 @@
-
 import type { Knex } from 'knex'
 
 const hasNodeEnv = Boolean(process.env.NODE_ENV)
