@@ -1,7 +1,5 @@
 import type { Knex } from 'knex'
 
-const hasNodeEnv = Boolean(process.env.NODE_ENV)
-
 const config: Knex.Config = {
   client: 'pg',
   connection: {
@@ -10,7 +8,7 @@ const config: Knex.Config = {
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    ssl: hasNodeEnv && process.env.NODE_ENV !== 'development'
+    ssl: process.env.DB_SSL === 'true'
       ? { rejectUnauthorized: true }
       : false,
   },
