@@ -3,6 +3,7 @@ import { defineVitestProject } from "@nuxt/test-utils/config";
 
 export default defineConfig({
   test: {
+    globalSetup: ["test/globalSetup.ts"],
     projects: [
       {
         test: {
@@ -18,6 +19,8 @@ export default defineConfig({
           name: "e2e",
           include: ["test/e2e/**/*.{test,spec}.ts"],
           environment: "node",
+          fileParallelism: false,
+          env: { DB_NAME: "versa_test" },
         },
       },
       await defineVitestProject({

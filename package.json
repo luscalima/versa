@@ -38,6 +38,7 @@
   "devDependencies": {
     "@nuxt/test-utils": "^4.0.3",
     "@nuxtjs/tailwindcss": "7.0.0-beta.1",
+    "@types/pg": "^8.20.0",
     "@vue/test-utils": "^2.4.10",
     "eslint": "^9.0.0 || ^10.0.0",
     "happy-dom": "^20.9.0",
