@@ -14,7 +14,7 @@ const config: Knex.Config = {
   },
   migrations: {
     directory: './server/infra/database/migrations',
-    extension: 'ts',
+    extension: process.env.NODE_ENV === 'production' ? 'js' : 'ts',
   },
 }
 
