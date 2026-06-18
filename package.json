@@ -3,8 +3,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "nuxt build && bun run migrations:build",
-    "migrations:build": "bun build ./server/infra/database/migrations/*.ts --outdir .output/server/infra/database/migrations --format esm",
+    "build": "nuxt build",
     "dev": "bun services:up && nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",

@@ -1,3 +1,4 @@
+import { join } from 'node:path'
 import type { Knex } from 'knex'
 
 const config: Knex.Config = {
@@ -13,8 +14,8 @@ const config: Knex.Config = {
       : false,
   },
   migrations: {
-    directory: './server/infra/database/migrations',
-    extension: process.env.NODE_ENV === 'production' ? 'js' : 'ts',
+    directory: join(process.cwd(), 'server/infra/database/migrations'),
+    extension: 'ts',
   },
 }
 
