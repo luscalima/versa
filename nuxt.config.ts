@@ -1,5 +1,3 @@
-import { cpSync, mkdirSync } from 'node:fs'
-
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
@@ -22,15 +20,4 @@ export default defineNuxtConfig({
       name: process.env.DB_NAME
     }
   },
-  hooks: {
-    'nitro:build:public-assets'() {
-      // preserve migrations directory in the output for production
-      mkdirSync('./server/infra/database/migrations', { recursive: true })
-      cpSync(
-        './server/infra/database/migrations',
-        './.output/server/infra/database/migrations',
-        { recursive: true }
-      )
-    }
-  }
 })

@@ -1,13 +1,14 @@
-import { createDatabase, type Database } from '../infra/database'
-
+import { createDatabase, type Database } from '../infra/database/database'
+import { createMigrationSource } from '../infra/database/migrations-source'
 declare module 'nitropack' {
   interface NitroApp {
     database: Database
   }
 }
 
-export default defineNitroPlugin((nitroApp) => {
-  const database = createDatabase()
+export default defineNitroPlugin(async (nitroApp) => {
+  const migrationSource = await createMigrationSource()
+  const database = createDatabase({ migrationSource })
 
   nitroApp.database = database
 
