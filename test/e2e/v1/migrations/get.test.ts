@@ -1,7 +1,5 @@
-import { fetch, setup } from '@nuxt/test-utils/e2e'
-import { clearDatabase, destroyDatabase } from '../../../helpers/database'
-
-await setup({})
+import { fetch } from 'ofetch'
+import { clearDatabase, destroyDatabase, api } from '#test/helpers'
 
 describe('GET /v1/migrations', async () => {
   beforeAll(async () => {
@@ -13,7 +11,7 @@ describe('GET /v1/migrations', async () => {
   })
 
   it('should return pending migrations on a clean database', async () => {
-    const sut = await fetch('/api/v1/migrations')
+    const sut = await fetch(api('/api/v1/migrations'))
     const body = await sut.json()
 
     expect(sut.status).toBe(200)

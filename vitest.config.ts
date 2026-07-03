@@ -1,5 +1,6 @@
 import { defineConfig } from "vitest/config";
 import { defineVitestProject } from "@nuxt/test-utils/config";
+import { fileURLToPath } from 'node:url'
 
 export default defineConfig({
   test: {
@@ -20,22 +21,16 @@ export default defineConfig({
           include: ["test/e2e/**/*.{test,spec}.ts"],
           environment: "node",
           fileParallelism: false,
-          env: { DB_NAME: "versa_test" },
+          testTimeout: 60000,
+        },
+        resolve: {
+          alias: {
+            '#server': fileURLToPath(new URL('./server', import.meta.url)),
+            '#test': fileURLToPath(new URL('./test', import.meta.url)),
+          },
         },
       },
       await defineVitestProject({
-        // Solution for issue: https://github.com/nuxt/test-utils/issues/1490#issuecomment-4013972739
-        // plugins: [
-        //   {
-        //     name: 'ignore-bun-test',
-        //     enforce: 'pre',
-        //     resolveId(id) {
-        //       if (id === 'bun:test') {
-        //         return { id: 'bun:test', external: true }
-        //       }
-        //     }
-        //   }
-        // ],
         test: {
           globals: true,
           name: "nuxt",

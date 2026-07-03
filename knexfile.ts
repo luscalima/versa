@@ -1,6 +1,8 @@
 import { join } from 'node:path'
 import type { Knex } from 'knex'
 
+const isTest = process.env.APP_ENV === 'test'
+
 const config: Knex.Config = {
   client: 'pg',
   connection: {
@@ -8,7 +10,7 @@ const config: Knex.Config = {
     port: Number(process.env.DB_PORT),
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
+    database: isTest ? process.env.DB_NAME_TEST : process.env.DB_NAME,
     ssl: process.env.DB_SSL === 'true'
       ? { rejectUnauthorized: true }
       : false,

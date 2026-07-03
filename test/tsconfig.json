@@ -1,5 +1,9 @@
 {
   "compilerOptions": {
-    "types": ["vitest/globals", "node"]
+    "types": ["vitest/globals", "node"],
+    "paths": {
+      "#test/*": ["../test/*"],
+      "#server/*": ["../server/*"]
+    }
   }
 }

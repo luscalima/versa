@@ -1,24 +1,27 @@
 import knex, { type Knex } from 'knex'
 import { loadEnv } from 'vite'
 import knexBaseConfig from '../../knexfile'
-import { TEST_DB_NAME } from '../globalSetup'
+import { createMigrationSource } from '../../server/infra/database/migrations-source'
 
 let db: Knex | null = null
 
-function getDatabase(): Knex {
+async function getDatabase(): Promise<Knex> {
   if (!db) {
     const env = loadEnv('', process.cwd(), '')
 
     db = knex({
       ...knexBaseConfig,
       connection: {
-        host: env.DB_HOST ?? 'localhost',
-        port: Number(env.DB_PORT ?? 5432),
+        host: env.DB_HOST,
+        port: Number(env.DB_PORT),
         user: env.DB_USER,
         password: env.DB_PASSWORD,
-        database: TEST_DB_NAME,
+        database: env.DB_NAME_TEST,
         ssl: env.DB_SSL === 'true' ? { rejectUnauthorized: true } : false,
       },
+      migrations: {
+        migrationSource: await createMigrationSource()
+      }
     })
   }
 
@@ -26,7 +29,8 @@ function getDatabase(): Knex {
 }
 
 export async function clearDatabase(): Promise<void> {
-  await getDatabase().migrate.rollback(undefined, true)
+  const db = await getDatabase()
+  await db.migrate.rollback(undefined, true)
 }
 
 export async function destroyDatabase(): Promise<void> {

@@ -1,7 +1,5 @@
-import { fetch, setup } from '@nuxt/test-utils/e2e'
-import { clearDatabase, destroyDatabase } from '../../../helpers/database'
-
-await setup({})
+import { fetch } from 'ofetch'
+import { clearDatabase, destroyDatabase, api } from '#test/helpers'
 
 describe('POST /v1/migrations', async () => {
   beforeAll(async () => {
@@ -13,14 +11,14 @@ describe('POST /v1/migrations', async () => {
   })
 
   it('should run all pending migrations and return an empty completed list', async () => {
-    const sutOne = await fetch('/api/v1/migrations', { method: 'POST' })
+    const sutOne = await fetch(api('/api/v1/migrations'), { method: 'POST' })
     const bodyOne = await sutOne.json()
 
     expect(sutOne.status).toBe(201)
     expect(Array.isArray(bodyOne.completed)).toBe(true)
     expect(bodyOne.completed.length).toBeGreaterThan(0)
 
-    const sutTwo = await fetch('/api/v1/migrations', { method: 'POST' })
+    const sutTwo = await fetch(api('/api/v1/migrations'), { method: 'POST' })
     const bodyTwo = await sutTwo.json()
 
     expect(sutTwo.status).toBe(200)

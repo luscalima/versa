@@ -1,14 +1,16 @@
-import pg from 'pg'
+import { fetch } from 'ofetch'
 import { loadEnv } from 'vite'
+import { api } from './helpers'
+import retry from 'async-retry'
+import pg from 'pg'
 
-export const TEST_DB_NAME = 'versa_test'
-
-export async function setup() {
+async function setupDatabase() {
+  const TEST_DB_NAME = 'versa_test'
   const env = loadEnv('', process.cwd(), '')
 
   const client = new pg.Client({
-    host: env.DB_HOST ?? 'localhost',
-    port: Number(env.DB_PORT ?? 5432),
+    host: env.DB_HOST,
+    port: Number(env.DB_PORT),
     user: env.DB_USER,
     password: env.DB_PASSWORD,
     database: env.DB_NAME,
@@ -26,4 +28,29 @@ export async function setup() {
   }
 
   await client.end()
+}
+
+async function waitForAllServices() {
+  async function webService() {
+    async function fetchStatus() {
+      const response = await fetch(api('/api/v1/status'))
+
+      if (response.status !== 200) {
+        throw Error()
+      }
+
+      await response.json()
+    }
+
+    return retry(fetchStatus, {
+      retries: 100,
+    })
+  }
+
+  await webService()
+}
+
+export async function setup() {
+  await setupDatabase()
+  await waitForAllServices()
 }
