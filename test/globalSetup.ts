@@ -1,7 +1,6 @@
-import { fetch } from 'ofetch'
 import { loadEnv } from 'vite'
 import { api } from './helpers'
-import retry from 'async-retry'
+import waitOn from 'wait-on'
 import pg from 'pg'
 
 async function setupDatabase() {
@@ -31,23 +30,13 @@ async function setupDatabase() {
 }
 
 async function waitForAllServices() {
-  async function webService() {
-    async function fetchStatus() {
-      const response = await fetch(api('/api/v1/status'))
-
-      if (response.status !== 200) {
-        throw Error()
-      }
-
-      await response.json()
-    }
-
-    return retry(fetchStatus, {
-      retries: 100,
-    })
-  }
-
-  await webService()
+  await waitOn({
+    resources: [
+      api('/api/v1/status', true),
+    ],
+    timeout: 60_000,
+    interval: 500,
+  })
 }
 
 export async function setup() {
