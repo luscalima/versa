@@ -6,7 +6,7 @@ declare module 'nitropack' {
   }
 }
 
-export default defineNitroPlugin(async (nitroApp) => {
+export default defineNitroPlugin(async nitroApp => {
   const migrationSource = await createMigrationSource()
   const database = createDatabase({ migrationSource })
 

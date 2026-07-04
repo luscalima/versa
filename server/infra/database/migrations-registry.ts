@@ -4,5 +4,5 @@ export const migrations = [
   {
     name: '20260616225503_test',
     module: m0,
-  }
+  },
 ]

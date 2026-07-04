@@ -19,7 +19,7 @@ async function setupDatabase() {
 
   const { rows } = await client.query<{ exists: boolean }>(
     `SELECT 1 as exists FROM pg_database WHERE datname = $1`,
-    [TEST_DB_NAME]
+    [TEST_DB_NAME],
   )
 
   if (rows.length === 0) {
@@ -31,9 +31,7 @@ async function setupDatabase() {
 
 async function waitForAllServices() {
   await waitOn({
-    resources: [
-      api('/api/v1/status', true),
-    ],
+    resources: [api('/api/v1/status', true)],
     timeout: 60_000,
     interval: 500,
   })

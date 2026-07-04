@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { AlertTriangleIcon } from "@lucide/vue";
+import { AlertTriangleIcon } from '@lucide/vue'
 
 useHead({
-  title: "versa",
-});
+  title: 'versa',
+})
 
-const clickMe = ref(false);
+const clickMe = ref(false)
 </script>
 
 <template>
@@ -16,12 +16,15 @@ const clickMe = ref(false);
         <AlertTriangleIcon />
         <AppAlertTitle>Under construction</AppAlertTitle>
         <AppAlertDescription>
-          This application is currently under construction. Please check back
-          later for updates.
+          This application is currently under construction. Please check back later for updates.
         </AppAlertDescription>
       </AppAlert>
       <div class="text-center">
-        <AppButton :disabled="clickMe" class="mt-4" @click="clickMe = true">
+        <AppButton
+          :disabled="clickMe"
+          class="mt-4"
+          @click="clickMe = true"
+        >
           Click me
         </AppButton>
         <div class="h-10 mt-4">

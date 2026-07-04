@@ -1,25 +1,25 @@
-import { defineConfig } from "vitest/config";
-import { defineVitestProject } from "@nuxt/test-utils/config";
+import { defineConfig } from 'vitest/config'
+import { defineVitestProject } from '@nuxt/test-utils/config'
 import { fileURLToPath } from 'node:url'
 
 export default defineConfig({
   test: {
-    globalSetup: ["test/globalSetup.ts"],
+    globalSetup: ['test/globalSetup.ts'],
     projects: [
       {
         test: {
           globals: true,
-          name: "unit",
-          include: ["test/unit/**/*.{test,spec}.ts"],
-          environment: "node",
+          name: 'unit',
+          include: ['test/unit/**/*.{test,spec}.ts'],
+          environment: 'node',
         },
       },
       {
         test: {
           globals: true,
-          name: "e2e",
-          include: ["test/e2e/**/*.{test,spec}.ts"],
-          environment: "node",
+          name: 'e2e',
+          include: ['test/e2e/**/*.{test,spec}.ts'],
+          environment: 'node',
           fileParallelism: false,
           testTimeout: 60000,
         },
@@ -33,11 +33,11 @@ export default defineConfig({
       await defineVitestProject({
         test: {
           globals: true,
-          name: "nuxt",
-          include: ["test/nuxt/**/*.{test,spec}.ts"],
-          environment: "nuxt",
+          name: 'nuxt',
+          include: ['test/nuxt/**/*.{test,spec}.ts'],
+          environment: 'nuxt',
         },
       }),
     ],
   },
-});
+})
