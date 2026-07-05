@@ -11,6 +11,6 @@ export default defineEventHandler(async (): Promise<GetMigrationsResponse> => {
 
   return {
     completed,
-    pending
+    pending,
   }
 })

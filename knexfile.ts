@@ -11,9 +11,7 @@ const config: Knex.Config = {
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: isTest ? process.env.DB_NAME_TEST : process.env.DB_NAME,
-    ssl: process.env.DB_SSL === 'true'
-      ? { rejectUnauthorized: true }
-      : false,
+    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: true } : false,
   },
   migrations: {
     directory: join(process.cwd(), 'server/infra/database/migrations'),

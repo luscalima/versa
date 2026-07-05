@@ -1,4 +1,4 @@
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async event => {
   const db = useDatabase()
 
   // live run, run the pending migrations
@@ -8,6 +8,6 @@ export default defineEventHandler(async (event) => {
   setResponseStatus(event, statusCode)
 
   return {
-    completed
+    completed,
   }
 })

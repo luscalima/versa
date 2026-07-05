@@ -20,8 +20,8 @@ async function getDatabase(): Promise<Knex> {
         ssl: env.DB_SSL === 'true' ? { rejectUnauthorized: true } : false,
       },
       migrations: {
-        migrationSource: await createMigrationSource()
-      }
+        migrationSource: await createMigrationSource(),
+      },
     })
   }
 

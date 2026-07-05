@@ -10,8 +10,8 @@ interface DatabaseConfig {
 export function createDatabase(config?: DatabaseConfig): Database {
   return knex({
     ...knexConfig,
-    migrations: config?.migrationSource ?
-      { migrationSource: config.migrationSource } :
-      knexConfig.migrations,
+    migrations: config?.migrationSource
+      ? { migrationSource: config.migrationSource }
+      : knexConfig.migrations,
   })
 }

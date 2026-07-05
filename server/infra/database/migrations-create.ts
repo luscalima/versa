@@ -9,11 +9,7 @@ if (!name) {
 }
 
 await new Promise<void>((resolvePromise, reject) => {
-  const child = spawn(
-    'bun',
-    ['node_modules/.bin/knex', 'migrate:make', name],
-    { stdio: 'inherit' }
-  )
+  const child = spawn('bun', ['node_modules/.bin/knex', 'migrate:make', name], { stdio: 'inherit' })
 
   child.on('exit', code => {
     if (code === 0) resolvePromise()
@@ -21,22 +17,19 @@ await new Promise<void>((resolvePromise, reject) => {
   })
 })
 
-const migrationsDir = resolve(process.cwd(),'server/infra/database/migrations')
+const migrationsDir = resolve(process.cwd(), 'server/infra/database/migrations')
 
-const files = (await readdir(migrationsDir))
-  .filter(f => f.endsWith('.ts'))
-  .sort()
+const files = (await readdir(migrationsDir)).filter(f => f.endsWith('.ts')).sort()
 
 const imports = files.map(
-  (file, i) =>
-    `import * as m${i} from './migrations/${file.replace('.ts', '')}'`
+  (file, i) => `import * as m${i} from './migrations/${file.replace('.ts', '')}'`,
 )
 
 const entries = files.map(
   (file, i) => `  {
     name: '${file.replace('.ts', '')}',
     module: m${i},
-  }`
+  }`,
 )
 
 const content = `
@@ -47,6 +40,6 @@ ${entries.join(',\n')}
 ]
 `.trim()
 
-const outputPath = resolve(process.cwd(),'server/infra/database/migrations-registry.ts')
+const outputPath = resolve(process.cwd(), 'server/infra/database/migrations-registry.ts')
 
 await writeFile(outputPath, content)
