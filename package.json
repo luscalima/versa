@@ -17,7 +17,9 @@
     "migrate:latest": "bun node_modules/.bin/knex migrate:latest",
     "migrate:rollback": "bun node_modules/.bin/knex migrate:rollback",
     "format:check": "prettier --check .",
-    "format:fix": "prettier --write ."
+    "format:fix": "prettier --write .",
+    "lint:check": "eslint --ext .ts,.vue .",
+    "lint:fix": "bun lint:check -- --fix"
   },
   "dependencies": {
     "@lucide/vue": "^1.17.0",
