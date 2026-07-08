@@ -41,6 +41,8 @@
     "zod": "3.25.76"
   },
   "devDependencies": {
+    "@commitlint/cli": "^21.2.0",
+    "@commitlint/config-conventional": "^21.2.0",
     "@nuxt/test-utils": "^4.0.3",
     "@nuxtjs/tailwindcss": "7.0.0-beta.1",
     "@types/pg": "^8.20.0",
