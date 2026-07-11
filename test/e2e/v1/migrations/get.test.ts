@@ -10,14 +10,16 @@ describe('GET /v1/migrations', async () => {
     await destroyDatabase()
   })
 
-  it('should return pending migrations on a clean database', async () => {
-    const sut = await fetch(api('/api/v1/migrations'))
-    const body = await sut.json()
+  describe('Anonymous user', () => {
+    it('Retrieving pending migrations', async () => {
+      const sut = await fetch(api('/api/v1/migrations'))
+      const body = await sut.json()
 
-    expect(sut.status).toBe(200)
-    expect(Array.isArray(body.completed)).toBe(true)
-    expect(Array.isArray(body.pending)).toBe(true)
-    expect(body.completed.length).toBe(0)
-    expect(body.pending.length).toBeGreaterThan(0)
+      expect(sut.status).toBe(200)
+      expect(Array.isArray(body.completed)).toBe(true)
+      expect(Array.isArray(body.pending)).toBe(true)
+      expect(body.completed.length).toBe(0)
+      expect(body.pending.length).toBeGreaterThan(0)
+    })
   })
 })
