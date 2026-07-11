@@ -9,7 +9,7 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "test": "bun services:up && wait-on tcp:5432 && (APP_ENV=test nuxt dev &) && bunx vitest",
-    "test:watch": "bun run test -- --watch",
+    "test:watch": "bun run test -- --watch --reporter=tree",
     "services:up": "docker compose up --wait",
     "services:stop": "docker compose stop",
     "services:down": "docker compose down",

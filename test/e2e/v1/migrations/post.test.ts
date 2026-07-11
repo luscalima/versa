@@ -10,19 +10,25 @@ describe('POST /v1/migrations', async () => {
     await destroyDatabase()
   })
 
-  it('should run all pending migrations and return an empty completed list', async () => {
-    const sutOne = await fetch(api('/api/v1/migrations'), { method: 'POST' })
-    const bodyOne = await sutOne.json()
+  describe('Anonymous user', () => {
+    describe('Running pending migrations', async () => {
+      it('For the first time', async () => {
+        const sut = await fetch(api('/api/v1/migrations'), { method: 'POST' })
+        const body = await sut.json()
 
-    expect(sutOne.status).toBe(201)
-    expect(Array.isArray(bodyOne.completed)).toBe(true)
-    expect(bodyOne.completed.length).toBeGreaterThan(0)
+        expect(sut.status).toBe(201)
+        expect(Array.isArray(body.completed)).toBe(true)
+        expect(body.completed.length).toBeGreaterThan(0)
+      })
 
-    const sutTwo = await fetch(api('/api/v1/migrations'), { method: 'POST' })
-    const bodyTwo = await sutTwo.json()
+      it('For the other times', async () => {
+        const sut = await fetch(api('/api/v1/migrations'), { method: 'POST' })
+        const body = await sut.json()
 
-    expect(sutTwo.status).toBe(200)
-    expect(Array.isArray(bodyTwo.completed)).toBe(true)
-    expect(bodyTwo.completed.length).toBe(0)
+        expect(sut.status).toBe(200)
+        expect(Array.isArray(body.completed)).toBe(true)
+        expect(body.completed.length).toBe(0)
+      })
+    })
   })
 })
