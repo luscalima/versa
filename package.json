@@ -31,7 +31,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "knex": "^3.2.10",
-    "nuxt": "^4.4.6",
+    "nuxt": "^4.4.8",
     "pg": "^8.21.0",
     "reka-ui": "^2.9.8",
     "shadcn-nuxt": "2.7.3",
