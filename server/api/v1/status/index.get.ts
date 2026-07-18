@@ -7,7 +7,7 @@ export type GetStatusResponse = {
   }
 }
 
-export default defineEventHandler(async (): Promise<GetStatusResponse> => {
+export default defineRouteHandler(async (): Promise<GetStatusResponse> => {
   const db = useDatabase()
   const dbName = useRuntimeConfig().database.name
 
