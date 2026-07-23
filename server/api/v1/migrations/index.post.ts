@@ -1,4 +1,4 @@
-export default defineEventHandler(async event => {
+export default defineRouteHandler(async event => {
   const db = useDatabase()
 
   // live run, run the pending migrations
