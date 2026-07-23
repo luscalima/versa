@@ -3,7 +3,7 @@ export type GetMigrationsResponse = {
   pending: string[]
 }
 
-export default defineEventHandler(async (): Promise<GetMigrationsResponse> => {
+export default defineRouteHandler(async (): Promise<GetMigrationsResponse> => {
   const db = useDatabase()
 
   // dry run, create the migrations table if it doesn't exist
