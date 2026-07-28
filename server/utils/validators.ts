@@ -8,7 +8,8 @@ type ErrorLike = Error & {
   cause?: unknown
 }
 
-function isForbidden(error: unknown) {
+// Errors that can't be directly exposed to the client
+function isForbiddenService(error: unknown) {
   return [DatabaseError].some(err => error instanceof err)
 }
 
@@ -17,10 +18,11 @@ export function toAppError(error: unknown): H3Error {
     return error
   }
 
-  if (isForbidden(error)) {
+  if (isForbiddenService(error)) {
     return internalServerError({
       cause: error,
       message: 'The operation could not be completed at this time. Please try again later.',
+      statusCode: 503,
     })
   }
 
