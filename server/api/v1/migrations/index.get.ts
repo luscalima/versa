@@ -10,7 +10,7 @@ export default defineRouteHandler(async (): Promise<GetMigrationsResponse> => {
   const [completed, pending] = await db.migrate.list()
 
   return {
-    completed,
-    pending,
+    completed: completed.map((m: { name: string }) => m.name),
+    pending: pending.map((m: { name: string }) => m.name),
   }
 })
