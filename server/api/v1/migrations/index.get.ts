@@ -4,13 +4,7 @@ export type GetMigrationsResponse = {
 }
 
 export default defineRouteHandler(async (): Promise<GetMigrationsResponse> => {
-  const db = useDatabase()
+  const migrator = useMigrator()
 
-  // dry run, create the migrations table if it doesn't exist
-  const [completed, pending] = await db.migrate.list()
-
-  return {
-    completed,
-    pending,
-  }
+  return await migrator.list()
 })

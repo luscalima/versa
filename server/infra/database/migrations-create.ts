@@ -27,7 +27,7 @@ const imports = files.map(
 
 const entries = files.map(
   (file, i) => `  {
-    name: '${file.replace('.ts', '')}',
+    name: '${file}',
     module: m${i},
   }`,
 )
