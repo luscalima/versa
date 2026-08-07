@@ -31,7 +31,7 @@ async function setupDatabase() {
 
 async function waitForAllServices() {
   await waitOn({
-    resources: [api('/api/v1/status', true)],
+    resources: [api('/v1/status', true)],
     timeout: 60_000,
     interval: 500,
   })
