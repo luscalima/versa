@@ -1,3 +1,6 @@
+import { KnexDatabaseRepository } from '~~/server/infra/repositories/knexDatabaseRepository'
+import { DatabaseService } from '~~/server/modules/database/databaseService'
+
 export type GetStatusResponse = {
   updated_at: string
   database: {
@@ -8,8 +11,9 @@ export type GetStatusResponse = {
 }
 
 export default defineRouteHandler(async (): Promise<GetStatusResponse> => {
-  const databaseStatus = useDatabaseStatus()
-  const { version, maxConnections, openedConnections } = await databaseStatus.get()
+  const repository = new KnexDatabaseRepository(useDatabase())
+  const service = new DatabaseService(repository)
+  const { version, maxConnections, openedConnections } = await service.getStatus()
 
   return {
     updated_at: new Date().toISOString(),
