@@ -28,7 +28,7 @@ export class User {
 
     const user = new User({
       id: crypto.randomUUID(),
-      username: props.username.toLowerCase(),
+      username: props.username,
       password: props.password,
       email: props.email.toLowerCase(),
     })
