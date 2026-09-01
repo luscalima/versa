@@ -1,2 +1,3 @@
 app/components/ui
 app/assets/css/tailwind.css
+server/infra/database/migrations-registry.ts

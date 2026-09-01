@@ -13,7 +13,7 @@ describe('POST /v1/migrations', async () => {
   describe('Anonymous user', () => {
     describe('Running pending migrations', async () => {
       it('For the first time', async () => {
-        const sut = await fetch(api('/api/v1/migrations'), { method: 'POST' })
+        const sut = await fetch(api('/v1/migrations'), { method: 'POST' })
         const body = await sut.json()
 
         expect(sut.status).toBe(201)
@@ -22,7 +22,7 @@ describe('POST /v1/migrations', async () => {
       })
 
       it('For the other times', async () => {
-        const sut = await fetch(api('/api/v1/migrations'), { method: 'POST' })
+        const sut = await fetch(api('/v1/migrations'), { method: 'POST' })
         const body = await sut.json()
 
         expect(sut.status).toBe(200)

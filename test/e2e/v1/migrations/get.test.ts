@@ -12,7 +12,7 @@ describe('GET /v1/migrations', async () => {
 
   describe('Anonymous user', () => {
     it('Retrieving pending migrations', async () => {
-      const sut = await fetch(api('/api/v1/migrations'))
+      const sut = await fetch(api('/v1/migrations'))
       const body = await sut.json()
 
       expect(sut.status).toBe(200)
