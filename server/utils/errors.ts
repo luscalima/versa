@@ -37,3 +37,7 @@ export function unprocessableEntityError(opts: AppErrorOptions) {
 export function conflictError(opts: AppErrorOptions) {
   return createError(errorOptions(409, 'CONFLICT', opts))
 }
+
+export function notFoundError(opts: AppErrorOptions) {
+  return createError(errorOptions(404, 'NOT_FOUND', opts))
+}
