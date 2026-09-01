@@ -1,7 +1,7 @@
 import { err, ok, type Result } from 'neverthrow'
 import type { User } from './user'
 import type { UserRepository } from './userRepository'
-import { conflictError } from '~~/server/utils/errors'
+import { conflictError, notFoundError } from '~~/server/utils/errors'
 
 // TODO: criar macros globais para tipos do neverthrow
 // TODO: implementar novas macros globais
@@ -39,5 +39,20 @@ export class UserService {
     Reflect.deleteProperty(saveResult, 'password')
 
     return ok(saveResult)
+  }
+
+  async findByUsername(username: string): Promise<Result<User, Error>> {
+    const userResult = await this.userRepository.findByUsername(username)
+
+    if (!userResult) {
+      return err(
+        notFoundError({
+          code: 'USER_NOT_FOUND',
+          message: `User with username '${username}' not found`,
+        }),
+      )
+    }
+
+    return ok(userResult)
   }
 }
