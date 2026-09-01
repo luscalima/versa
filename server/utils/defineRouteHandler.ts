@@ -4,7 +4,13 @@ import { toAppError } from './validators'
 export default function defineRouteHandler<T>(handler: (event: H3Event) => Promise<T>) {
   return defineEventHandler(async event => {
     try {
-      return await handler(event)
+      const result = await handler(event)
+
+      if (result instanceof Error) {
+        throw result
+      }
+
+      return result
     } catch (error) {
       const appError = toAppError(error)
 
