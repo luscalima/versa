@@ -39,3 +39,8 @@ export async function destroyDatabase(): Promise<void> {
     db = null
   }
 }
+
+export async function restoreDatabase(): Promise<void> {
+  const db = await getDatabase()
+  await db.migrate.latest()
+}
