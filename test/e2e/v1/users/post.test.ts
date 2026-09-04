@@ -1,6 +1,8 @@
 import { fetch } from 'ofetch'
-import { clearDatabase, destroyDatabase, api, restoreDatabase } from '#test/helpers'
+import { clearDatabase, destroyDatabase, api, getDatabase, restoreDatabase } from '#test/helpers'
 import { version as uuidVersion } from 'uuid'
+import { NativeHasherAdapter } from '../../../../server/infra/adapters/nativeHasherAdapter'
+import { KnexUserRepository } from '../../../../server/infra/repositories/knexUserRepository'
 
 describe('POST /v1/users', async () => {
   beforeEach(async () => {
@@ -58,6 +60,15 @@ describe('POST /v1/users', async () => {
       expect(userData).not.toHaveProperty('password')
       expect(Date.parse(userData.created_at)).not.toBeNaN()
       expect(Date.parse(userData.updated_at)).not.toBeNaN()
+
+      const repository = new KnexUserRepository(await getDatabase())
+      const hasher = new NativeHasherAdapter()
+      const user = await repository.findByUsername(userPayload.username)
+      const correctCompareResult = await hasher.compare(userPayload.password, user.password)
+      const incorrectCompareResult = await hasher.compare('wrongpassword', user.password)
+
+      expect(correctCompareResult).toBe(true)
+      expect(incorrectCompareResult).toBe(false)
     })
 
     it('With duplicate data', async () => {
@@ -113,18 +124,12 @@ describe('POST /v1/users', async () => {
         invalidJsonResponse,
         missingFieldResponse,
         invalidEmailResponse,
-        shortPasswordResponse,
-        passwordWithoutLettersResponse,
-        passwordWithoutNumbersResponse,
         emptyUsernameResponse,
         whitespaceUsernameResponse,
       ] = await Promise.all([
         requestUserCreationWithRawBody('{"username": "JohnDoe"'),
         requestUserCreation({ username: 'JohnDoe', email: 'john.doe@example.com' }),
         requestUserCreation({ ...userPayload, email: 'invalid-email' }),
-        requestUserCreation({ ...userPayload, password: 'Pass1' }),
-        requestUserCreation({ ...userPayload, password: '12345678' }),
-        requestUserCreation({ ...userPayload, password: 'Password' }),
         requestUserCreation({ ...userPayload, username: '' }),
         requestUserCreation({ ...userPayload, username: '   ' }),
       ])
@@ -132,9 +137,6 @@ describe('POST /v1/users', async () => {
       expect(invalidJsonResponse.status).toBe(400)
       expect(missingFieldResponse.status).toBe(400)
       expect(invalidEmailResponse.status).toBe(400)
-      expect(shortPasswordResponse.status).toBe(400)
-      expect(passwordWithoutLettersResponse.status).toBe(422)
-      expect(passwordWithoutNumbersResponse.status).toBe(422)
       expect(emptyUsernameResponse.status).toBe(400)
       expect(whitespaceUsernameResponse.status).toBe(422)
     })

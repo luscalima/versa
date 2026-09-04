@@ -34,7 +34,6 @@ describe('GET /v1/users/:username', async () => {
       expect(data).toEqual({
         username: userPayload.username,
         email: userPayload.email,
-        password: userPayload.password,
       })
     })
 
@@ -48,7 +47,6 @@ describe('GET /v1/users/:username', async () => {
       expect(data).toEqual({
         username: userPayload.username,
         email: userPayload.email,
-        password: userPayload.password,
       })
     })
 
