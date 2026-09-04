@@ -7,23 +7,16 @@ export interface UserProps {
   readonly password: string
 }
 
-type CreateUserProps = Omit<UserProps, 'id'>
+export type CreateUserProps = Omit<UserProps, 'id'>
 
 export class User {
   private constructor(private readonly props: UserProps) {}
 
   static create(props: CreateUserProps): Result<User, string> {
     const usernameRegex = /^[a-zA-Z0-9]{3,}$/
-    const passwordRegex = /^(?=.{8,}$)(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).*$/
 
     if (!usernameRegex.test(props.username)) {
       return err('Username must be at least 3 only alphanumeric characters long')
-    }
-
-    if (!passwordRegex.test(props.password)) {
-      return err(
-        'Password must be at least 8 chars, including uppercase, lowercase, a number, and a special character.',
-      )
     }
 
     const user = new User({

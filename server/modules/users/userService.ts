@@ -1,18 +1,30 @@
 import { err, ok, type Result } from 'neverthrow'
-import type { User } from './user'
+import type { CreateUserProps } from './user'
+import { User } from './user'
 import type { UserRepository } from './userRepository'
 import { conflictError, notFoundError } from '~~/server/utils/errors'
-
-// TODO: criar macros globais para tipos do neverthrow
-// TODO: implementar novas macros globais
-// TODO: commitar alterações
-// TODO: conitnuar...
+import type { HasherPort } from '../hasher/hasherPort'
 
 export class UserService {
-  constructor(private readonly userRepository: UserRepository) {}
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly hasher: HasherPort,
+  ) {}
 
-  async create(user: User): Promise<Result<object, Error>> {
-    const usernameResult = await this.userRepository.findByUsername(user.username)
+  async create(payload: CreateUserProps): Promise<Result<object, Error>> {
+    const password = await this.hasher.password(payload.password)
+    const transformedPayload = { ...payload, password }
+    const user = User.create(transformedPayload)
+
+    if (user.isErr()) {
+      return err(
+        unprocessableEntityError({
+          message: user.error,
+        }),
+      )
+    }
+
+    const usernameResult = await this.userRepository.findByUsername(user.value.username)
 
     if (usernameResult) {
       return err(
@@ -23,7 +35,7 @@ export class UserService {
       )
     }
 
-    const emailResult = await this.userRepository.findByEmail(user.email)
+    const emailResult = await this.userRepository.findByEmail(user.value.email)
 
     if (emailResult) {
       return err(
@@ -34,7 +46,7 @@ export class UserService {
       )
     }
 
-    const saveResult = await this.userRepository.save(user)
+    const saveResult = await this.userRepository.save(user.value)
 
     Reflect.deleteProperty(saveResult, 'password')
 

@@ -1,10 +1,12 @@
+import type { Knex } from 'knex'
 import { User } from '~~/server/modules/users/user'
 import type { UserRepository } from '~~/server/modules/users/userRepository'
 import { useModelProps } from '~~/server/utils/useModelProps'
 
 export class KnexUserRepository implements UserRepository {
-  private readonly db = useDatabase()
   private readonly table = 'users'
+
+  constructor(private readonly db: Knex) {}
 
   async findByUsername(username: string) {
     const findResult = await this.db(this.table)
