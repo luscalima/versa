@@ -33,6 +33,8 @@ export async function clearDatabase(): Promise<void> {
   await db.migrate.rollback(undefined, true)
 }
 
+export { getDatabase }
+
 export async function destroyDatabase(): Promise<void> {
   if (db) {
     await db.destroy()

@@ -1,9 +1,8 @@
 import { KnexUserRepository } from '~~/server/infra/repositories/knexUserRepository'
 import { z } from 'zod'
 import { useValidate } from '~~/server/utils/useValidate'
-import { User } from '~~/server/modules/users/user'
-import { unprocessableEntityError } from '~~/server/utils/errors'
 import { UserService } from '~~/server/modules/users/userService'
+import { NativeHasherAdapter } from '~~/server/infra/adapters/nativeHasherAdapter'
 
 export const userSchema = z.object({
   username: z.string().nonempty().trim(),
@@ -18,17 +17,10 @@ export default defineRouteHandler(async event => {
     return payload.error
   }
 
-  const user = User.create(payload.value)
-
-  if (user.isErr()) {
-    return unprocessableEntityError({
-      message: user.error,
-    })
-  }
-
-  const repository = new KnexUserRepository()
-  const service = new UserService(repository)
-  const result = await service.create(user.value)
+  const repository = new KnexUserRepository(useDatabase())
+  const hasher = new NativeHasherAdapter()
+  const service = new UserService(repository, hasher)
+  const result = await service.create(payload.value)
 
   if (result.isErr()) {
     return result.error
