@@ -24,47 +24,91 @@ export class UserService {
       )
     }
 
-    const usernameResult = await this.userRepository.findByUsername(user.value.username)
+    const usernameCheck = await this.ensureUnique('username', user.value.username)
+    if (usernameCheck) return err(usernameCheck)
 
-    if (usernameResult) {
-      return err(
-        conflictError({
-          code: 'USERNAME_ALREADY_IN_USE',
-          message: 'This username is already being used by someone else',
-        }),
-      )
-    }
-
-    const emailResult = await this.userRepository.findByEmail(user.value.email)
-
-    if (emailResult) {
-      return err(
-        conflictError({
-          code: 'EMAIL_ALREADY_IN_USE',
-          message: 'This email is already being used by someone else',
-        }),
-      )
-    }
+    const emailCheck = await this.ensureUnique('email', user.value.email)
+    if (emailCheck) return err(emailCheck)
 
     const saveResult = await this.userRepository.save(user.value)
 
-    Reflect.deleteProperty(saveResult, 'password')
-
-    return ok(saveResult)
+    return ok(this.stripPassword(saveResult))
   }
 
   async findByUsername(username: string): Promise<Result<User, Error>> {
     const userResult = await this.userRepository.findByUsername(username)
 
     if (!userResult) {
-      return err(
-        notFoundError({
-          code: 'USER_NOT_FOUND',
-          message: `User with username '${username}' not found`,
-        }),
-      )
+      return this.notFoundError(username)
     }
 
     return ok(userResult)
+  }
+
+  async update(
+    username: string,
+    payload: Partial<CreateUserProps>,
+  ): Promise<Result<object, Error>> {
+    const userResult = await this.userRepository.findByUsername(username)
+
+    if (!userResult) {
+      return this.notFoundError(username)
+    }
+
+    if (payload.username && payload.username !== userResult.username) {
+      const usernameCheck = await this.ensureUnique('username', payload.username)
+      if (usernameCheck) return err(usernameCheck)
+    }
+
+    if (payload.email && payload.email !== userResult.email) {
+      const emailCheck = await this.ensureUnique('email', payload.email)
+      if (emailCheck) return err(emailCheck)
+    }
+
+    const transformedPayload = { ...payload }
+
+    if (payload.password) {
+      transformedPayload.password = await this.hasher.password(payload.password)
+    }
+
+    if (payload.email) {
+      transformedPayload.email = payload.email.toLowerCase()
+    }
+
+    const updateResult = await this.userRepository.update(username, transformedPayload)
+
+    return ok(this.stripPassword(updateResult))
+  }
+
+  private async ensureUnique(
+    field: 'username' | 'email',
+    value: string,
+  ): Promise<Error | undefined> {
+    const existing =
+      field === 'username'
+        ? await this.userRepository.findByUsername(value)
+        : await this.userRepository.findByEmail(value)
+
+    if (existing) {
+      return conflictError({
+        code: `${field.toUpperCase()}_ALREADY_IN_USE`,
+        message: `This ${field} is already being used by someone else`,
+      })
+    }
+  }
+
+  private stripPassword(obj: object) {
+    const result = { ...obj }
+    Reflect.deleteProperty(result, 'password')
+    return result
+  }
+
+  private notFoundError(username: string) {
+    return err(
+      notFoundError({
+        code: 'USER_NOT_FOUND',
+        message: `User with username '${username}' not found`,
+      }),
+    )
   }
 }
