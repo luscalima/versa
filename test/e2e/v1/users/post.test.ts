@@ -1,13 +1,19 @@
 import { fetch } from 'ofetch'
-import { clearDatabase, destroyDatabase, api, getDatabase, restoreDatabase } from '#test/helpers'
+import {
+  api,
+  clearDatabase,
+  destroyDatabase,
+  getDatabase,
+  restoreDatabase,
+  rebuildDatabase,
+} from '#test/helpers'
 import { version as uuidVersion } from 'uuid'
-import { NativeHasherAdapter } from '../../../../server/infra/adapters/nativeHasherAdapter'
-import { KnexUserRepository } from '../../../../server/infra/repositories/knexUserRepository'
+import { NativeHasherAdapter } from '#server/infra/adapters/nativeHasherAdapter'
+import { KnexUserRepository } from '#server/infra/repositories/knexUserRepository'
 
 describe('POST /v1/users', async () => {
   beforeEach(async () => {
-    await clearDatabase()
-    await restoreDatabase()
+    await rebuildDatabase()
   })
 
   afterAll(async () => {

@@ -46,3 +46,13 @@ export async function restoreDatabase(): Promise<void> {
   const db = await getDatabase()
   await db.migrate.latest()
 }
+
+export async function rebuildDatabase(): Promise<void> {
+  await clearDatabase()
+  await restoreDatabase()
+}
+
+export async function downDatabase() {
+  await clearDatabase()
+  await destroyDatabase()
+}
