@@ -1,35 +1,24 @@
 import { fetch } from 'ofetch'
-import { api, clearDatabase, destroyDatabase, getDatabase, restoreDatabase } from '#test/helpers'
-import { NativeHasherAdapter } from '../../../../server/infra/adapters/nativeHasherAdapter'
-import { KnexUserRepository } from '../../../../server/infra/repositories/knexUserRepository'
+import {
+  api,
+  destroyDatabase,
+  downDatabase,
+  dynamicMocks,
+  staticMocks,
+  getDatabase,
+  restoreDatabase,
+} from '#test/helpers'
+import { NativeHasherAdapter } from '#server/infra/adapters/nativeHasherAdapter'
+import { KnexUserRepository } from '#server/infra/repositories/knexUserRepository'
 
 describe('PATCH /v1/users/:username', async () => {
-  const username = 'JohnDoe'
-  const userPayload = {
-    username,
-    email: 'john.doe@example.com',
-    password: 'Password123!',
-  }
-
   beforeEach(async () => {
-    await clearDatabase()
-    await restoreDatabase()
-    await createUser()
+    await dynamicMocks.createUser(null, { rebuild: true })
   })
 
   afterAll(async () => {
     await destroyDatabase()
   })
-
-  async function createUser(payload: Record<string, unknown> = userPayload) {
-    const response = await fetch(api('/v1/users'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    })
-
-    return response.json()
-  }
 
   async function updateUser(targetUsername: string, payload: Record<string, unknown>) {
     return fetch(api(`/v1/users/${targetUsername}`), {
@@ -43,14 +32,14 @@ describe('PATCH /v1/users/:username', async () => {
     describe('Updating a user', async () => {
       it('Updates the "username" only', async () => {
         const newUsername = 'JaneDoe'
-        const response = await updateUser(username, { username: newUsername })
+        const response = await updateUser(staticMocks.user.username, { username: newUsername })
 
         expect(response.status).toBe(200)
 
         const data = await response.json()
 
         expect(data.username).toBe(newUsername)
-        expect(data.email).toBe(userPayload.email)
+        expect(data.email).toBe(staticMocks.user.email)
         expect(data).not.toHaveProperty('password')
 
         const repository = new KnexUserRepository(await getDatabase())
@@ -61,32 +50,35 @@ describe('PATCH /v1/users/:username', async () => {
 
       it('Updates the "email" only', async () => {
         const newEmail = 'jane.doe@example.com'
-        const response = await updateUser(username, { email: newEmail })
+        const response = await updateUser(staticMocks.user.username, { email: newEmail })
 
         expect(response.status).toBe(200)
 
         const data = await response.json()
 
-        expect(data.username).toBe(username)
+        expect(data.username).toBe(staticMocks.user.username)
         expect(data.email).toBe(newEmail)
         expect(data).not.toHaveProperty('password')
       })
 
       it('Updates the "password", hashing it on persistence', async () => {
         const newPassword = 'NewPassword456!'
-        const response = await updateUser(username, { password: newPassword })
+        const response = await updateUser(staticMocks.user.username, { password: newPassword })
 
         expect(response.status).toBe(200)
 
         const repository = new KnexUserRepository(await getDatabase())
         const hasher = new NativeHasherAdapter()
-        const user = await repository.findByUsername(username)
+        const user = await repository.findByUsername(staticMocks.user.username)
         const fallsBackToPlainText = user.password === newPassword
 
         expect(fallsBackToPlainText).toBe(false)
 
         const correctCompareResult = await hasher.compare(newPassword, user.password)
-        const oldPasswordCompareResult = await hasher.compare(userPayload.password, user.password)
+        const oldPasswordCompareResult = await hasher.compare(
+          staticMocks.user.password,
+          user.password,
+        )
 
         expect(correctCompareResult).toBe(true)
         expect(oldPasswordCompareResult).toBe(false)
@@ -97,7 +89,7 @@ describe('PATCH /v1/users/:username', async () => {
           username: 'JaneDoe',
           email: 'jane.doe@example.com',
         }
-        const response = await updateUser(username, newPayload)
+        const response = await updateUser(staticMocks.user.username, newPayload)
 
         expect(response.status).toBe(200)
 
@@ -110,7 +102,7 @@ describe('PATCH /v1/users/:username', async () => {
 
       it('Normalizes the "email" to lowercase', async () => {
         const mixedCaseEmail = 'JANE.DOE@EXAMPLE.COM'
-        const response = await updateUser(username, { email: mixedCaseEmail })
+        const response = await updateUser(staticMocks.user.username, { email: mixedCaseEmail })
 
         expect(response.status).toBe(200)
 
@@ -141,10 +133,9 @@ describe('PATCH /v1/users/:username', async () => {
 
     describe('With uniqueness conflicts', async () => {
       it('Returns conflict when the "username" is already in use by another user', async () => {
-        const otherUser = { ...userPayload, username: 'JaneDoe', email: 'jane@example.com' }
-        await createUser(otherUser)
+        await dynamicMocks.createUser({ username: 'JaneDoe' }, { merge: true, unique: true })
 
-        const response = await updateUser(username, { username: 'JaneDoe' })
+        const response = await updateUser(staticMocks.user.username, { username: 'JaneDoe' })
 
         expect(response.status).toBe(409)
 
@@ -160,10 +151,11 @@ describe('PATCH /v1/users/:username', async () => {
       })
 
       it('Returns conflict when the "email" is already in use by another user', async () => {
-        const otherUser = { ...userPayload, username: 'JaneDoe', email: 'jane@example.com' }
-        await createUser(otherUser)
+        await dynamicMocks.createUser({ email: 'jane@example.com' }, { merge: true, unique: true })
 
-        const response = await updateUser(username, { email: 'jane@example.com' })
+        const response = await updateUser(staticMocks.user.username, {
+          email: 'jane@example.com',
+        })
 
         expect(response.status).toBe(409)
 
@@ -179,9 +171,9 @@ describe('PATCH /v1/users/:username', async () => {
       })
 
       it('Allows keeping the same "username" and "email" (self)', async () => {
-        const response = await updateUser(username, {
-          username,
-          email: userPayload.email,
+        const response = await updateUser(staticMocks.user.username, {
+          username: staticMocks.user.username,
+          email: staticMocks.user.email,
         })
 
         expect(response.status).toBe(200)
@@ -190,19 +182,19 @@ describe('PATCH /v1/users/:username', async () => {
 
     describe('With invalid data', async () => {
       it('Returns bad request for invalid email', async () => {
-        const response = await updateUser(username, { email: 'invalid-email' })
+        const response = await updateUser(staticMocks.user.username, { email: 'invalid-email' })
 
         expect(response.status).toBe(400)
       })
 
       it('Returns bad request for empty username', async () => {
-        const response = await updateUser(username, { username: '' })
+        const response = await updateUser(staticMocks.user.username, { username: '' })
 
         expect(response.status).toBe(400)
       })
 
       it('Returns bad request for invalid JSON body', async () => {
-        const response = await fetch(api(`/v1/users/${username}`), {
+        const response = await fetch(api(`/v1/users/${staticMocks.user.username}`), {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: '{"username": "JohnDoe"',
@@ -212,7 +204,7 @@ describe('PATCH /v1/users/:username', async () => {
       })
 
       it('Returns bad request for a short password', async () => {
-        const response = await updateUser(username, { password: 'Short1' })
+        const response = await updateUser(staticMocks.user.username, { password: 'Short1' })
 
         expect(response.status).toBe(400)
       })
@@ -220,10 +212,9 @@ describe('PATCH /v1/users/:username', async () => {
 
     describe('With unexpected server errors', async () => {
       it('Returns 503 when the database is unavailable', async () => {
-        await clearDatabase()
-        await destroyDatabase()
+        await downDatabase()
 
-        const response = await updateUser(username, { username: 'NewName' })
+        const response = await updateUser(staticMocks.user.username, { username: 'NewName' })
         const errorResponse = await response.json()
 
         expect(response.status).toBe(503)

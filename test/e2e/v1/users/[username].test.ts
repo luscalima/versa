@@ -1,5 +1,5 @@
 import { fetch } from 'ofetch'
-import { api, clearDatabase, destroyDatabase, restoreDatabase } from '#test/helpers'
+import { api, destroyDatabase, dynamicMocks } from '#test/helpers'
 
 describe('GET /v1/users/:username', async () => {
   const username = 'JohnDoe'
@@ -10,13 +10,7 @@ describe('GET /v1/users/:username', async () => {
   }
 
   beforeAll(async () => {
-    await clearDatabase()
-    await restoreDatabase()
-    await fetch(api('/v1/users'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(userPayload),
-    })
+    await dynamicMocks.createUser(null, { rebuild: true })
   })
 
   afterAll(async () => {
