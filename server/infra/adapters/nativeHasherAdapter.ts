@@ -2,6 +2,12 @@ import bcrypt from 'bcrypt'
 import type { HasherPort } from '~~/server/modules/hasher/hasherPort'
 
 export class NativeHasherAdapter implements HasherPort {
+  readonly dummyHash: string
+
+  constructor() {
+    this.dummyHash = bcrypt.hashSync(crypto.randomUUID(), this.costByEnv)
+  }
+
   async password(payload: string): Promise<string> {
     return await bcrypt.hash(payload, this.costByEnv)
   }
