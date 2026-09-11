@@ -41,3 +41,7 @@ export function conflictError(opts: AppErrorOptions) {
 export function notFoundError(opts: AppErrorOptions) {
   return createError(errorOptions(404, 'NOT_FOUND', opts))
 }
+
+export function unauthorizedError(opts: AppErrorOptions) {
+  return createError(errorOptions(401, 'UNAUTHORIZED', opts))
+}

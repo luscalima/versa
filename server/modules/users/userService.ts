@@ -45,6 +45,16 @@ export class UserService {
     return ok(userResult)
   }
 
+  async findByEmail(email: string): Promise<Result<User, Error>> {
+    const userResult = await this.userRepository.findByEmail(email)
+
+    if (!userResult) {
+      return this.notFoundError(email)
+    }
+
+    return ok(userResult)
+  }
+
   async update(
     username: string,
     payload: Partial<CreateUserProps>,

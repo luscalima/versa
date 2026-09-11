@@ -1,6 +1,7 @@
 import { getDatabase, rebuildDatabase } from '.'
-import type { CreateUserProps } from '#server/modules/users/user'
+import type { CreateUserProps, UserProps } from '#server/modules/users/user'
 import { faker } from '@faker-js/faker'
+import bcrypt from 'bcrypt'
 
 type DynamicActions = Partial<{
   rebuild: boolean
@@ -8,10 +9,10 @@ type DynamicActions = Partial<{
   unique: boolean
 }>
 
-async function createUser<T extends CreateUserProps>(
+async function createUser(
   payload?: Partial<CreateUserProps> | null,
   actions?: DynamicActions,
-): Promise<T> {
+): Promise<UserProps> {
   let data = payload ? { ...payload } : staticMocks.user
 
   if (actions?.unique) {
@@ -27,11 +28,13 @@ async function createUser<T extends CreateUserProps>(
     await rebuildDatabase()
   }
 
+  const dataToSave = { ...data }
+
+  dataToSave.password = bcrypt.hashSync(dataToSave.password!, 1)
+
   const table = 'users'
   const db = await getDatabase()
-  const [result] = await db(table)
-    .insert(data ?? staticMocks.user)
-    .returning('*')
+  const [result] = await db(table).insert(dataToSave).returning('*')
 
   return result
 }
