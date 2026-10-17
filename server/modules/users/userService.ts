@@ -55,6 +55,16 @@ export class UserService {
     return ok(userResult)
   }
 
+  async getById(id: string): Promise<Result<User, Error>> {
+    const userResult = await this.userRepository.findById(id)
+
+    if (!userResult) {
+      return this.notFoundError(id)
+    }
+
+    return ok(userResult)
+  }
+
   async update(
     username: string,
     payload: Partial<CreateUserProps>,

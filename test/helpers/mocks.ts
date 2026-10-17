@@ -2,6 +2,8 @@ import { getDatabase, rebuildDatabase } from '.'
 import type { CreateUserProps, UserProps } from '#server/modules/users/user'
 import { faker } from '@faker-js/faker'
 import bcrypt from 'bcrypt'
+import type { SessionProps } from '#server/modules/sessions/session'
+import { SessionService } from '#server/modules/sessions/sessionService'
 
 type DynamicActions = Partial<{
   rebuild: boolean
@@ -39,8 +41,32 @@ async function createUser(
   return result
 }
 
+async function createSession(
+  payload: Partial<SessionProps>,
+  actions?: DynamicActions,
+): Promise<SessionProps> {
+  let data = payload ? { ...payload } : staticMocks.session
+
+  if (actions?.merge) {
+    data = { ...staticMocks.session, ...data }
+  }
+
+  if (actions?.rebuild) {
+    await rebuildDatabase()
+  }
+
+  const dataToSave = { ...data }
+
+  const table = 'sessions'
+  const db = await getDatabase()
+  const [result] = await db(table).insert(dataToSave).returning('*')
+
+  return result
+}
+
 export const dynamicMocks = {
   createUser,
+  createSession,
 }
 
 export const staticMocks = {
@@ -48,5 +74,10 @@ export const staticMocks = {
     username: 'JohnDoe',
     email: 'john.doe@example.com',
     password: 'Password123!',
+  },
+  session: {
+    token:
+      '6e36cd7dd67594901b9d306e87d1def5f741a2fd2440343b1833454684f2180d37914183133b282c56ca275989e1b9bb',
+    expiresAt: new Date(Date.now() + SessionService.EXPIRATION_IN_MILLISECONDS),
   },
 }

@@ -37,6 +37,18 @@ export class KnexUserRepository implements UserRepository {
     return user
   }
 
+  async findById(id: string): Promise<User | null> {
+    const findResult = await this.db(this.table).where({ id }).first()
+
+    if (!findResult) {
+      return null
+    }
+
+    const user = User.fromPersistence(findResult)
+
+    return user
+  }
+
   async save(user: User) {
     const [saveResult] = await this.db(this.table).insert(useModelProps(user)).returning('*')
 
