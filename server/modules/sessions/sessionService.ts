@@ -43,4 +43,18 @@ export class SessionService {
 
     return ok(emailResult)
   }
+
+  async getValid(token: string): Promise<Session | null> {
+    const sessionResult = await this.sessionRepository.findOneByToken(token)
+
+    if (!sessionResult) {
+      return null
+    }
+
+    if (sessionResult.expiresAt.getTime() < Date.now()) {
+      return null
+    }
+
+    return sessionResult
+  }
 }

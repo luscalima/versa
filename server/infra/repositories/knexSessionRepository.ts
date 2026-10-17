@@ -1,5 +1,5 @@
 import type { Knex } from 'knex'
-import type { Session } from '~~/server/modules/sessions/session'
+import { Session } from '~~/server/modules/sessions/session'
 import type { SessionRepository } from '~~/server/modules/sessions/sessionRepository'
 import { useModelProps } from '~~/server/utils/useModelProps'
 
@@ -14,5 +14,15 @@ export class KnexSessionRepository implements SessionRepository {
       .returning('*')
 
     return saveResult
+  }
+
+  async findOneByToken(token: string): Promise<Session | null> {
+    const session = await this.db(this.table).where({ token }).first()
+
+    if (!session) {
+      return null
+    }
+
+    return Session.fromPersistence(session)
   }
 }
