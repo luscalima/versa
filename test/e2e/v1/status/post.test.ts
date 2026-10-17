@@ -11,7 +11,7 @@ describe('POST /v1/status', async () => {
 
       expect(sut.status).toBe(405)
       expect(body).toEqual({
-        status_code: 405,
+        statusCode: 405,
         message: 'The HTTP method used is not allowed for this endpoint.',
         data: {
           code: 'METHOD_NOT_ALLOWED',

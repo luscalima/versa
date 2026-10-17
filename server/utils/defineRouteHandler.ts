@@ -17,8 +17,8 @@ export default function defineRouteHandler<T>(handler: (event: H3Event) => Promi
       setResponseStatus(event, appError.statusCode, appError.statusMessage)
 
       return {
-        status_code: appError.statusCode,
-        status_message: appError.statusMessage,
+        statusCode: appError.statusCode,
+        statusMessage: appError.statusMessage,
         message: appError.message,
         data: appError.data,
       }

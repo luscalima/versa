@@ -122,7 +122,7 @@ describe('PATCH /v1/users/:username', async () => {
         const data = await response.json()
 
         expect(data).toEqual({
-          status_code: 404,
+          statusCode: 404,
           message: `User with username '${nonExistingUsername}' not found`,
           data: {
             code: 'USER_NOT_FOUND',
@@ -142,7 +142,7 @@ describe('PATCH /v1/users/:username', async () => {
         const data = await response.json()
 
         expect(data).toEqual({
-          status_code: 409,
+          statusCode: 409,
           message: 'This username is already being used by someone else',
           data: {
             code: 'USERNAME_ALREADY_IN_USE',
@@ -162,7 +162,7 @@ describe('PATCH /v1/users/:username', async () => {
         const data = await response.json()
 
         expect(data).toEqual({
-          status_code: 409,
+          statusCode: 409,
           message: 'This email is already being used by someone else',
           data: {
             code: 'EMAIL_ALREADY_IN_USE',
@@ -219,7 +219,7 @@ describe('PATCH /v1/users/:username', async () => {
 
         expect(response.status).toBe(503)
         expect(errorResponse).toEqual({
-          status_code: 503,
+          statusCode: 503,
           message: 'The operation could not be completed at this time. Please try again later.',
           data: { code: 'INTERNAL_SERVER_ERROR' },
         })

@@ -53,7 +53,7 @@ describe('GET /v1/users/:username', async () => {
       const data = await response.json()
 
       expect(data).toEqual({
-        status_code: 404,
+        statusCode: 404,
         message: `User with username '${nonExistingUsername}' not found`,
         data: {
           code: 'USER_NOT_FOUND',

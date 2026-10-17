@@ -49,7 +49,7 @@ describe('GET /v1/user', async () => {
       const body = await response.json()
 
       expect(body).toEqual({
-        status_code: 401,
+        statusCode: 401,
         message: 'Session is invalid or has expired',
         data: {
           code: 'UNAUTHORIZED',
@@ -69,7 +69,7 @@ describe('GET /v1/user', async () => {
       const body = await response.json()
 
       expect(body).toEqual({
-        status_code: 401,
+        statusCode: 401,
         message: 'Session is invalid or has expired',
         data: {
           code: 'UNAUTHORIZED',
@@ -98,7 +98,7 @@ describe('GET /v1/user', async () => {
       const body = await response.json()
 
       expect(body).toEqual({
-        status_code: 401,
+        statusCode: 401,
         message: 'Session is invalid or has expired',
         data: {
           code: 'UNAUTHORIZED',
