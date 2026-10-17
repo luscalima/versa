@@ -28,5 +28,5 @@ export default defineRouteHandler(async event => {
 
   setResponseStatus(event, 201)
 
-  return result.value
+  return result.value.toDTO()
 })

@@ -31,13 +31,19 @@ export default defineRouteHandler(async event => {
 
   const sessionResult = await sessionService.create(authResult.value.id)
 
+  if (sessionResult.isErr()) {
+    return sessionResult.error
+  }
+
+  const session = sessionResult.value.toDTO()
+
   setResponseStatus(event, 201)
-  setCookie(event, 'session_id', (sessionResult as { token: string }).token, {
+  setCookie(event, 'session_id', session.token, {
     httpOnly: true,
     path: '/',
     maxAge: SessionService.EXPIRATION_IN_MILLISECONDS / 1000,
     secure: import.meta.env.NODE_ENV === 'production',
   })
 
-  return sessionResult
+  return session
 })

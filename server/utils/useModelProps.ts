@@ -18,7 +18,11 @@ export function useModelProps<T extends object>(obj: T, actions?: Actions): Mate
       const descriptor = Object.getOwnPropertyDescriptor(prototype, key)
 
       if (descriptor?.get) {
-        ;(result as Record<PropertyKey, unknown>)[key] = (obj as Record<PropertyKey, unknown>)[key]
+        const value = (obj as Record<PropertyKey, unknown>)[key]
+
+        if (value !== undefined) {
+          ;(result as Record<PropertyKey, unknown>)[key] = value
+        }
       }
     }
 

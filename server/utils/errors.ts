@@ -1,3 +1,7 @@
+import type { H3Error } from '#imports'
+
+export type AppError = H3Error
+
 interface AppErrorOptions {
   code?: string
   message?: string

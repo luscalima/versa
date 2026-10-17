@@ -24,14 +24,11 @@ export default defineRouteHandler(async event => {
   const userService = new UserService(userRepository, hasher)
   const sessionResult = await sessionService.getValid(sessionId)
 
-  if (!sessionResult) {
-    return unauthorizedError({
-      code: 'UNAUTHORIZED',
-      message: 'Session is invalid or has expired',
-    })
+  if (sessionResult.isErr()) {
+    return sessionResult.error
   }
 
-  const userResult = await userService.getById(sessionResult.userId)
+  const userResult = await userService.getById(sessionResult.value.userId)
 
   if (userResult.isErr()) {
     return userResult.error

@@ -4,6 +4,6 @@ export interface UserRepository {
   findByUsername(username: string): Promise<User | null>
   findByEmail(email: string): Promise<User | null>
   findById(id: string): Promise<User | null>
-  save(user: User): Promise<object>
-  update(username: string, payload: Partial<CreateUserProps>): Promise<object>
+  save(user: User): Promise<User>
+  update(username: string, payload: Partial<CreateUserProps>): Promise<User>
 }

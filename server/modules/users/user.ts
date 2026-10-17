@@ -5,18 +5,30 @@ export interface UserProps {
   readonly username: string
   readonly email: string
   readonly password: string
+  readonly createdAt?: Date
+  readonly updatedAt?: Date
 }
 
-export type CreateUserProps = Omit<UserProps, 'id'>
+export type CreateUserProps = Pick<UserProps, 'username' | 'email' | 'password'>
+
+export type UserDTO = Omit<UserProps, 'password'>
+
+export type UserError = {
+  code: 'INVALID_USERNAME'
+  message: string
+}
 
 export class User {
   private constructor(private readonly props: UserProps) {}
 
-  static create(props: CreateUserProps): Result<User, string> {
+  static create(props: CreateUserProps): Result<User, UserError> {
     const usernameRegex = /^[a-zA-Z0-9]{3,}$/
 
     if (!usernameRegex.test(props.username)) {
-      return err('Username must be at least 3 only alphanumeric characters long')
+      return err({
+        code: 'INVALID_USERNAME',
+        message: 'Username must be at least 3 only alphanumeric characters long',
+      })
     }
 
     const user = new User({
@@ -49,5 +61,23 @@ export class User {
 
   get password(): string {
     return this.props.password
+  }
+
+  get createdAt(): Date | undefined {
+    return this.props.createdAt
+  }
+
+  get updatedAt(): Date | undefined {
+    return this.props.updatedAt
+  }
+
+  toDTO(): UserDTO {
+    return {
+      id: this.id,
+      username: this.username,
+      email: this.email,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+    }
   }
 }

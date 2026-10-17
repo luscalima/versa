@@ -9,7 +9,7 @@ export class KnexUserRepository implements UserRepository {
 
   constructor(private readonly db: Knex) {}
 
-  async findByUsername(username: string) {
+  async findByUsername(username: string): Promise<User | null> {
     const findResult = await this.db(this.table)
       .whereRaw('LOWER(username) = ?', username.toLowerCase())
       .first()
@@ -23,7 +23,7 @@ export class KnexUserRepository implements UserRepository {
     return user
   }
 
-  async findByEmail(email: string) {
+  async findByEmail(email: string): Promise<User | null> {
     const findResult = await this.db(this.table)
       .whereRaw('LOWER(email) = ?', email.toLowerCase())
       .first()
@@ -49,21 +49,21 @@ export class KnexUserRepository implements UserRepository {
     return user
   }
 
-  async save(user: User) {
+  async save(user: User): Promise<User> {
     const [saveResult] = await this.db(this.table).insert(useModelProps(user)).returning('*')
 
-    return saveResult
+    return User.fromPersistence(saveResult)
   }
 
-  async update(username: string, payload: Partial<CreateUserProps>): Promise<object> {
+  async update(username: string, payload: Partial<CreateUserProps>): Promise<User> {
     const [updateResult] = await this.db(this.table)
       .whereRaw('LOWER(username) = ?', username.toLowerCase())
       .update({
         ...payload,
-        updated_at: this.db.fn.now(),
+        updatedAt: this.db.fn.now(),
       })
       .returning('*')
 
-    return updateResult
+    return User.fromPersistence(updateResult)
   }
 }

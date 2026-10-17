@@ -8,12 +8,10 @@ export class KnexSessionRepository implements SessionRepository {
 
   constructor(private readonly db: Knex) {}
 
-  async save(session: Session) {
-    const [saveResult] = await this.db(this.table)
-      .insert(useModelProps(session, { keysToCase: 'snakeCase' }))
-      .returning('*')
+  async save(session: Session): Promise<Session> {
+    const [saveResult] = await this.db(this.table).insert(useModelProps(session)).returning('*')
 
-    return saveResult
+    return Session.fromPersistence(saveResult)
   }
 
   async findOneByToken(token: string): Promise<Session | null> {
