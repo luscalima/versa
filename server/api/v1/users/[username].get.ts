@@ -8,7 +8,7 @@ export default defineRouteHandler(async event => {
   const hasher = new NativeHasherAdapter()
   const service = new UserService(repository, hasher)
 
-  const result = await service.findByUsername(username)
+  const result = await service.getByUsername(username)
 
   if (result.isErr()) {
     return result.error

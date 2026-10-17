@@ -45,7 +45,7 @@ describe('POST /v1/sessions', async () => {
       const data = await response.json()
 
       expect(data).toEqual({
-        status_code: 401,
+        statusCode: 401,
         message: 'Authentication data does not match',
         data: {
           code: 'UNAUTHORIZED',
@@ -64,7 +64,7 @@ describe('POST /v1/sessions', async () => {
       const data = await response.json()
 
       expect(data).toEqual({
-        status_code: 401,
+        statusCode: 401,
         message: 'Authentication data does not match',
         data: {
           code: 'UNAUTHORIZED',
@@ -83,7 +83,7 @@ describe('POST /v1/sessions', async () => {
       const data = await response.json()
 
       expect(data).toEqual({
-        status_code: 401,
+        statusCode: 401,
         message: 'Authentication data does not match',
         data: {
           code: 'UNAUTHORIZED',
@@ -103,19 +103,19 @@ describe('POST /v1/sessions', async () => {
 
       expect(data).toEqual({
         id: data.id,
-        user_id: user.id,
+        userId: user.id,
         token: data.token,
-        expires_at: data.expires_at,
-        created_at: data.created_at,
-        updated_at: data.updated_at,
+        expiresAt: data.expiresAt,
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt,
       })
       expect(uuidVersion(data.id)).toBe(4)
-      expect(Date.parse(data.expires_at)).not.toBeNaN()
-      expect(Date.parse(data.created_at)).not.toBeNaN()
-      expect(Date.parse(data.updated_at)).not.toBeNaN()
+      expect(Date.parse(data.expiresAt)).not.toBeNaN()
+      expect(Date.parse(data.createdAt)).not.toBeNaN()
+      expect(Date.parse(data.updatedAt)).not.toBeNaN()
 
-      const createdAt = new Date(data.created_at)
-      const expiresAt = new Date(data.expires_at)
+      const createdAt = new Date(data.createdAt)
+      const expiresAt = new Date(data.expiresAt)
 
       createdAt.setMilliseconds(0)
       expiresAt.setMilliseconds(0)
@@ -148,7 +148,7 @@ describe('POST /v1/sessions', async () => {
 
         expect(response.status).toBe(503)
         expect(errorResponse).toEqual({
-          status_code: 503,
+          statusCode: 503,
           message: 'The operation could not be completed at this time. Please try again later.',
           data: { code: 'INTERNAL_SERVER_ERROR' },
         })

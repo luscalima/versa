@@ -10,12 +10,12 @@ describe('GET /v1/status', async () => {
       expect(sutOne.status).toBe(200)
 
       const sutTwo = await $fetch<GetStatusResponse>(api('/v1/status'))
-      const parsedUpdatedAt = new Date(sutTwo.updated_at).toISOString()
+      const parsedUpdatedAt = new Date(sutTwo.updatedAt).toISOString()
 
-      expect(sutTwo.updated_at).toEqual(parsedUpdatedAt)
+      expect(sutTwo.updatedAt).toEqual(parsedUpdatedAt)
       expect(sutTwo.database.version).toBeTypeOf('string')
-      expect(sutTwo.database.max_connections).toBeGreaterThan(0)
-      expect(sutTwo.database.opened_connections).toBeGreaterThanOrEqual(0)
+      expect(sutTwo.database.maxConnections).toBeGreaterThan(0)
+      expect(sutTwo.database.openedConnections).toBeGreaterThanOrEqual(0)
     })
   })
 })

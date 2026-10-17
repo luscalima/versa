@@ -2,25 +2,31 @@ import { KnexDatabaseRepository } from '~~/server/infra/repositories/knexDatabas
 import { DatabaseService } from '~~/server/modules/database/databaseService'
 
 export type GetStatusResponse = {
-  updated_at: string
+  updatedAt: string
   database: {
     version: string
-    max_connections: number
-    opened_connections: number
+    maxConnections: number
+    openedConnections: number
   }
 }
 
-export default defineRouteHandler(async (): Promise<GetStatusResponse> => {
+export default defineRouteHandler(async () => {
   const repository = new KnexDatabaseRepository(useDatabase())
   const service = new DatabaseService(repository)
-  const { version, maxConnections, openedConnections } = await service.getStatus()
+  const result = await service.getStatus()
+
+  if (result.isErr()) {
+    return result.error
+  }
+
+  const { version, maxConnections, openedConnections } = result.value
 
   return {
-    updated_at: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
     database: {
       version,
-      max_connections: maxConnections,
-      opened_connections: openedConnections,
+      maxConnections,
+      openedConnections,
     },
   }
 })

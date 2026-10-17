@@ -22,14 +22,12 @@ setInterval(async () => {
       v-if="status"
       class="mt-4"
     >
-      <p>
-        <strong>Última atualização:</strong> {{ new Date(status?.updated_at).toLocaleString() }}
-      </p>
+      <p><strong>Última atualização:</strong> {{ new Date(status?.updatedAt).toLocaleString() }}</p>
       <strong class="uppercase">Database</strong>
       <div class="pl-4">
         <p><strong>Version:</strong> {{ status.database.version }}</p>
-        <p><strong>Maximum number of connections:</strong> {{ status.database.max_connections }}</p>
-        <p><strong>Open connections:</strong> {{ status.database.opened_connections }}</p>
+        <p><strong>Maximum number of connections:</strong> {{ status.database.maxConnections }}</p>
+        <p><strong>Open connections:</strong> {{ status.database.openedConnections }}</p>
       </div>
     </div>
     <div

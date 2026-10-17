@@ -1,5 +1,5 @@
 import type { H3Event } from '#imports'
-import { toAppError } from './validators'
+import { toAppError } from './errors'
 
 export default function defineRouteHandler<T>(handler: (event: H3Event) => Promise<T>) {
   return defineEventHandler(async event => {
@@ -17,8 +17,8 @@ export default function defineRouteHandler<T>(handler: (event: H3Event) => Promi
       setResponseStatus(event, appError.statusCode, appError.statusMessage)
 
       return {
-        status_code: appError.statusCode,
-        status_message: appError.statusMessage,
+        statusCode: appError.statusCode,
+        statusMessage: appError.statusMessage,
         message: appError.message,
         data: appError.data,
       }

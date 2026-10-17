@@ -1,7 +1,10 @@
 import { join } from 'node:path'
 import type { Knex } from 'knex'
+import { snakeCase, toCamelCaseKeys } from 'es-toolkit'
 
 const isTest = process.env.APP_ENV === 'test'
+
+const bypassIdentifiers = ['*']
 
 const config: Knex.Config = {
   client: 'pg',
@@ -16,6 +19,13 @@ const config: Knex.Config = {
   migrations: {
     directory: join(process.cwd(), 'server/infra/database/migrations'),
     extension: 'ts',
+  },
+  wrapIdentifier(value, origImpl) {
+    const newValue = bypassIdentifiers.includes(value) ? value : snakeCase(value)
+    return origImpl(newValue)
+  },
+  postProcessResponse(result) {
+    return toCamelCaseKeys(result)
   },
 }
 
