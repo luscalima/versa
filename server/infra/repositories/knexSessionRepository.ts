@@ -14,6 +14,12 @@ export class KnexSessionRepository implements SessionRepository {
     return Session.fromPersistence(saveResult)
   }
 
+  async update(id: string, session: Partial<Session>): Promise<Session> {
+    const [updateResult] = await this.db(this.table).where({ id }).update(session).returning('*')
+
+    return Session.fromPersistence(updateResult)
+  }
+
   async findOneByToken(token: string): Promise<Session | null> {
     const session = await this.db(this.table).where({ token }).first()
 

@@ -28,17 +28,20 @@ export default defineRouteHandler(async event => {
     return sessionResult.error
   }
 
+  await sessionService.renew(sessionResult.value.id)
+
   const userResult = await userService.getById(sessionResult.value.userId)
+
+  setCookie(event, 'session_id', sessionResult.value.token, {
+    httpOnly: true,
+    path: '/',
+    maxAge: SessionService.EXPIRATION_IN_MILLISECONDS / 1000,
+    secure: import.meta.env.NODE_ENV === 'production',
+  })
 
   if (userResult.isErr()) {
     return userResult.error
   }
 
-  const user = userResult.value
-
-  return {
-    id: user.id,
-    username: user.username,
-    email: user.email,
-  }
+  return userResult.value.toDTO()
 })

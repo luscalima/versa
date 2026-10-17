@@ -58,4 +58,14 @@ export class SessionService {
 
     return ok(sessionResult)
   }
+
+  async renew(id: string): Promise<Result<Session, AppError>> {
+    const expiresAt = this.generator.futureDate(SessionService.EXPIRATION_IN_MILLISECONDS)
+    const updateResult = await this.sessionRepository.update(id, {
+      expiresAt,
+      updatedAt: new Date(),
+    })
+
+    return ok(updateResult)
+  }
 }

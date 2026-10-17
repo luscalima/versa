@@ -64,9 +64,17 @@ async function createSession(
   return result
 }
 
+async function getSession(token = staticMocks.session.token): Promise<SessionProps> {
+  const table = 'sessions'
+  const db = await getDatabase()
+
+  return db(table).where({ token }).first()
+}
+
 export const dynamicMocks = {
   createUser,
   createSession,
+  getSession,
 }
 
 export const staticMocks = {
@@ -78,6 +86,9 @@ export const staticMocks = {
   session: {
     token:
       '6e36cd7dd67594901b9d306e87d1def5f741a2fd2440343b1833454684f2180d37914183133b282c56ca275989e1b9bb',
-    expiresAt: new Date(Date.now() + SessionService.EXPIRATION_IN_MILLISECONDS),
+    // using a getter so that the result is affected by fake timers
+    get expiresAt() {
+      return new Date(Date.now() + SessionService.EXPIRATION_IN_MILLISECONDS)
+    },
   },
 }
