@@ -7,14 +7,12 @@ export interface SessionProps {
   readonly updatedAt?: Date
 }
 
-export type CreateSessionProps = SessionProps
-
 export type SessionDTO = SessionProps
 
 export class Session {
   private constructor(private readonly props: SessionProps) {}
 
-  static create(props: CreateSessionProps): Session {
+  static create(props: SessionProps): Session {
     return new Session(props)
   }
 

@@ -6,9 +6,14 @@ export type GetMigrationsResponse = {
   pending: string[]
 }
 
-export default defineRouteHandler(async (): Promise<GetMigrationsResponse> => {
+export default defineRouteHandler(async () => {
   const repository = new KnexDatabaseRepository(useDatabase())
   const service = new DatabaseService(repository)
+  const result = await service.listMigrations()
 
-  return await service.listMigrations()
+  if (result.isErr()) {
+    return result.error
+  }
+
+  return result.value
 })

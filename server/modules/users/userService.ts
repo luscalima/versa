@@ -46,16 +46,6 @@ export class UserService {
     return ok(userResult)
   }
 
-  async getByEmail(email: string): Promise<Result<User, AppError>> {
-    const userResult = await this.userRepository.findByEmail(email)
-
-    if (!userResult) {
-      return this.notFoundError(email)
-    }
-
-    return ok(userResult)
-  }
-
   async getById(id: string): Promise<Result<User, AppError>> {
     const userResult = await this.userRepository.findById(id)
 

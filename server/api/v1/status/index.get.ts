@@ -10,10 +10,16 @@ export type GetStatusResponse = {
   }
 }
 
-export default defineRouteHandler(async (): Promise<GetStatusResponse> => {
+export default defineRouteHandler(async () => {
   const repository = new KnexDatabaseRepository(useDatabase())
   const service = new DatabaseService(repository)
-  const { version, maxConnections, openedConnections } = await service.getStatus()
+  const result = await service.getStatus()
+
+  if (result.isErr()) {
+    return result.error
+  }
+
+  const { version, maxConnections, openedConnections } = result.value
 
   return {
     updatedAt: new Date().toISOString(),
