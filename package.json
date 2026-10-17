@@ -30,6 +30,7 @@
     "bcrypt": "^6.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "es-toolkit": "^1.52.0",
     "knex": "^3.2.10",
     "neverthrow": "^8.2.0",
     "nuxt": "^4.4.8",
