@@ -1,5 +1,5 @@
 import type { H3Event } from '#imports'
-import { toAppError } from './validators'
+import { toAppError } from './errors'
 
 export default function defineRouteHandler<T>(handler: (event: H3Event) => Promise<T>) {
   return defineEventHandler(async event => {

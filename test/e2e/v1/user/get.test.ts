@@ -33,7 +33,6 @@ describe('GET /v1/user', async () => {
         id: createdUser.id,
         username: createdUser.username,
         email: createdUser.email,
-        password: createdUser.password,
       })
 
       expect(uuidVersion(userData.id)).toBe(4)

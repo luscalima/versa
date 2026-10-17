@@ -13,7 +13,7 @@ export class UserService {
   ) {}
 
   async create(payload: CreateUserProps): Promise<Result<User, AppError>> {
-    const password = await this.hasher.password(payload.password)
+    const password = await this.hasher.hash(payload.password)
     const transformedPayload = { ...payload, password }
     const user = User.create(transformedPayload)
 
@@ -36,7 +36,7 @@ export class UserService {
     return ok(saveResult)
   }
 
-  async findByUsername(username: string): Promise<Result<User, AppError>> {
+  async getByUsername(username: string): Promise<Result<User, AppError>> {
     const userResult = await this.userRepository.findByUsername(username)
 
     if (!userResult) {
@@ -46,7 +46,7 @@ export class UserService {
     return ok(userResult)
   }
 
-  async findByEmail(email: string): Promise<Result<User, AppError>> {
+  async getByEmail(email: string): Promise<Result<User, AppError>> {
     const userResult = await this.userRepository.findByEmail(email)
 
     if (!userResult) {
@@ -89,7 +89,7 @@ export class UserService {
     const transformedPayload = { ...payload }
 
     if (payload.password) {
-      transformedPayload.password = await this.hasher.password(payload.password)
+      transformedPayload.password = await this.hasher.hash(payload.password)
     }
 
     if (payload.email) {
