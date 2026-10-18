@@ -46,7 +46,7 @@ export class SessionService {
   }
 
   async getValid(token: string): Promise<Result<Session, AppError>> {
-    const sessionResult = await this.sessionRepository.findOneByToken(token)
+    const sessionResult = await this.sessionRepository.findValid(token)
 
     if (!sessionResult || sessionResult.expiresAt.getTime() < Date.now()) {
       return err(
