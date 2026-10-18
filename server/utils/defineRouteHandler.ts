@@ -16,6 +16,15 @@ export default function defineRouteHandler<T>(handler: (event: H3Event) => Promi
 
       setResponseStatus(event, appError.statusCode, appError.statusMessage)
 
+      if (appError.statusCode === 401) {
+        setCookie(event, 'session_id', '', {
+          httpOnly: true,
+          path: '/',
+          maxAge: -1,
+          secure: import.meta.env.NODE_ENV === 'production',
+        })
+      }
+
       return {
         statusCode: appError.statusCode,
         statusMessage: appError.statusMessage,

@@ -68,4 +68,25 @@ export class SessionService {
 
     return ok(updateResult)
   }
+
+  async invalidate(id: string): Promise<Result<Session, AppError>> {
+    const session = await this.sessionRepository.findValid(id)
+
+    if (!session) {
+      return err(
+        unauthorizedError({
+          message: 'Session is invalid or has expired',
+        }),
+      )
+    }
+
+    const pastTimestamp = SessionService.EXPIRATION_IN_MILLISECONDS * 12 //roughly one year
+
+    await this.sessionRepository.update(session.id, {
+      expiresAt: new Date(Date.now() - pastTimestamp),
+      updatedAt: new Date(),
+    })
+
+    return ok(session)
+  }
 }
