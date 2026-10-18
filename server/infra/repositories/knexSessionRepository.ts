@@ -20,8 +20,11 @@ export class KnexSessionRepository implements SessionRepository {
     return Session.fromPersistence(updateResult)
   }
 
-  async findOneByToken(token: string): Promise<Session | null> {
-    const session = await this.db(this.table).where({ token }).first()
+  async findValid(token: string): Promise<Session | null> {
+    const session = await this.db(this.table)
+      .where({ token })
+      .where('expiresAt', '>=', new Date())
+      .first()
 
     if (!session) {
       return null

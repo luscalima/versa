@@ -46,7 +46,7 @@ export class SessionService {
   }
 
   async getValid(token: string): Promise<Result<Session, AppError>> {
-    const sessionResult = await this.sessionRepository.findOneByToken(token)
+    const sessionResult = await this.sessionRepository.findValid(token)
 
     if (!sessionResult || sessionResult.expiresAt.getTime() < Date.now()) {
       return err(
@@ -67,5 +67,27 @@ export class SessionService {
     })
 
     return ok(updateResult)
+  }
+
+  async invalidate(id: string): Promise<Result<Session, AppError>> {
+    const session = await this.sessionRepository.findValid(id)
+
+    if (!session) {
+      return err(
+        unauthorizedError({
+          message: 'Session is invalid or has expired',
+        }),
+      )
+    }
+
+    const pastTimestamp = SessionService.EXPIRATION_IN_MILLISECONDS * 12 //roughly one year
+    const expiresAt = new Date(Date.now() - pastTimestamp)
+
+    await this.sessionRepository.update(session.id, {
+      expiresAt,
+      updatedAt: new Date(),
+    })
+
+    return ok(session)
   }
 }
