@@ -22,9 +22,15 @@ export default defineRouteHandler(async event => {
 
   const sessionResult = await sessionService.invalidate(sessionId)
 
-  setResponseStatus(event, 204)
-
   if (sessionResult.isErr()) {
     return sessionResult.error
   }
+
+  setResponseStatus(event, 204)
+  setCookie(event, 'session_id', '', {
+    httpOnly: true,
+    path: '/',
+    maxAge: -1,
+    secure: import.meta.env.NODE_ENV === 'production',
+  })
 })

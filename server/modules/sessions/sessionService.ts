@@ -81,9 +81,10 @@ export class SessionService {
     }
 
     const pastTimestamp = SessionService.EXPIRATION_IN_MILLISECONDS * 12 //roughly one year
+    const expiresAt = new Date(Date.now() - pastTimestamp)
 
     await this.sessionRepository.update(session.id, {
-      expiresAt: new Date(Date.now() - pastTimestamp),
+      expiresAt,
       updatedAt: new Date(),
     })
 
