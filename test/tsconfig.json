@@ -3,7 +3,8 @@
     "types": ["vitest/globals", "node"],
     "paths": {
       "#test/*": ["../test/*"],
-      "#server/*": ["../server/*"]
+      "#server/*": ["../server/*"],
+      "~~/*": ["../*"]
     }
   }
 }

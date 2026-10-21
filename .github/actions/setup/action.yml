@@ -20,6 +20,9 @@ runs:
         DB_PASSWORD=postgres
         DB_NAME=versa_test
         DB_NAME_TEST=versa_test
+        MAIL_HOST=localhost
+        MAIL_PORT=1025
+        LOCAL_MAIL_WEB_PORT=8025
         EOF
     - name: Setup Bun
       uses: oven-sh/setup-bun@v2
