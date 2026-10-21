@@ -18,6 +18,18 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  mail:
+    image: axllent/mailpit:latest
+    container_name: mail
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - '${MAIL_PORT:-1025}:1025'
+      - '${LOCAL_MAIL_WEB_PORT:-8025}:8025'
+    volumes:
+      - mail_data:/data
 
 volumes:
   db_data:
+  mail_data:

@@ -20,6 +20,13 @@ export default defineConfig({
           include: ['test/unit/**/*.{test,spec}.ts'],
           environment: 'node',
         },
+        resolve: {
+          alias: {
+            '#server': fileURLToPath(new URL('./server', import.meta.url)),
+            '#test': fileURLToPath(new URL('./test', import.meta.url)),
+            '~~': fileURLToPath(new URL('.', import.meta.url)),
+          },
+        },
       },
       {
         test: {

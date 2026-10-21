@@ -1,5 +1,5 @@
 import { loadEnv } from 'vite'
-import { api } from './helpers'
+import { api, mailHealthyStatus } from './helpers'
 import waitOn from 'wait-on'
 import pg from 'pg'
 
@@ -31,7 +31,7 @@ async function setupDatabase() {
 
 async function waitForAllServices() {
   await waitOn({
-    resources: [api('/v1/status', true)],
+    resources: [api('/v1/status', true), mailHealthyStatus()],
     timeout: 60_000,
     interval: 500,
   })
