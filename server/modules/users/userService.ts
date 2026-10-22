@@ -12,9 +12,13 @@ export class UserService {
     private readonly hasher: HasherPort,
   ) {}
 
-  async create(payload: CreateUserProps): Promise<Result<User, AppError>> {
+  async create(payload: Omit<CreateUserProps, 'resources'>): Promise<Result<User, AppError>> {
     const password = await this.hasher.hash(payload.password)
-    const transformedPayload = { ...payload, password }
+    const transformedPayload = {
+      ...payload,
+      password,
+      resources: ['read:activation_token'],
+    }
     const user = User.create(transformedPayload)
 
     if (user.isErr()) {

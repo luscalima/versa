@@ -7,14 +7,17 @@ import { SessionService } from '#server/modules/sessions/sessionService'
 import setCookieParser from 'set-cookie-parser'
 
 describe('GET /v1/user', async () => {
-  let createdUser: UserProps
+  let createdUser: UserProps & { resources: string[] }
   let createdSession: SessionProps
 
   beforeAll(async () => {
     vi.useFakeTimers({
       now: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
     })
-    createdUser = await dynamicMocks.createUser(null, { rebuild: true })
+    createdUser = await dynamicMocks.createUser(
+      { resources: ['users:read', 'sessions:write'] },
+      { merge: true, rebuild: true },
+    )
     createdSession = await dynamicMocks.createSession({ userId: createdUser.id }, { merge: true })
   })
 
@@ -38,6 +41,7 @@ describe('GET /v1/user', async () => {
         id: createdUser.id,
         username: createdUser.username,
         email: createdUser.email,
+        resources: createdUser.resources,
         createdAt: createdUser.createdAt?.toISOString(),
         updatedAt: createdUser.updatedAt?.toISOString(),
       })

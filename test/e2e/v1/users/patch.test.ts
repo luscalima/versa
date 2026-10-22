@@ -61,6 +61,55 @@ describe('PATCH /v1/users/:username', async () => {
         expect(data).not.toHaveProperty('password')
       })
 
+      it('Updates the "resources" only', async () => {
+        const newResources = ['users:read', 'sessions:write']
+        const response = await updateUser(staticMocks.user.username, { resources: newResources })
+
+        expect(response.status).toBe(200)
+
+        const data = await response.json()
+
+        expect(data.resources).toEqual(newResources)
+        expect(data.username).toBe(staticMocks.user.username)
+        expect(data.email).toBe(staticMocks.user.email)
+        expect(data).not.toHaveProperty('password')
+
+        const repository = new KnexUserRepository(await getDatabase())
+        const user = await repository.findByUsername(staticMocks.user.username)
+
+        expect(user!.toDTO()).toMatchObject({ resources: newResources })
+      })
+
+      it('Keeps the existing "resources" when not provided', async () => {
+        const resources = ['users:read']
+        await dynamicMocks.createUser({ resources }, { merge: true, rebuild: true })
+
+        const response = await updateUser(staticMocks.user.username, { username: 'JaneDoe' })
+
+        expect(response.status).toBe(200)
+
+        const data = await response.json()
+
+        expect(data.resources).toEqual(resources)
+      })
+
+      it('Clears the "resources" when an empty array is provided', async () => {
+        await updateUser(staticMocks.user.username, { resources: ['users:read'] })
+
+        const response = await updateUser(staticMocks.user.username, { resources: [] })
+
+        expect(response.status).toBe(200)
+
+        const data = await response.json()
+
+        expect(data.resources).toEqual([])
+
+        const repository = new KnexUserRepository(await getDatabase())
+        const user = await repository.findByUsername(staticMocks.user.username)
+
+        expect(user!.toDTO()).toMatchObject({ resources: [] })
+      })
+
       it('Updates the "password", hashing it on persistence', async () => {
         const newPassword = 'NewPassword456!'
         const response = await updateUser(staticMocks.user.username, { password: newPassword })
@@ -69,7 +118,7 @@ describe('PATCH /v1/users/:username', async () => {
 
         const repository = new KnexUserRepository(await getDatabase())
         const hasher = new NativeHasherAdapter()
-        const user = await repository.findByUsername(staticMocks.user.username)
+        const user = (await repository.findByUsername(staticMocks.user.username))!
         const fallsBackToPlainText = user.password === newPassword
 
         expect(fallsBackToPlainText).toBe(false)
@@ -88,6 +137,7 @@ describe('PATCH /v1/users/:username', async () => {
         const newPayload = {
           username: 'JaneDoe',
           email: 'jane.doe@example.com',
+          resources: ['users:read', 'users:write'],
         }
         const response = await updateUser(staticMocks.user.username, newPayload)
 
@@ -97,6 +147,7 @@ describe('PATCH /v1/users/:username', async () => {
 
         expect(data.username).toBe(newPayload.username)
         expect(data.email).toBe(newPayload.email)
+        expect(data.resources).toEqual(newPayload.resources)
         expect(data).not.toHaveProperty('password')
       })
 
@@ -205,6 +256,22 @@ describe('PATCH /v1/users/:username', async () => {
 
       it('Returns bad request for a short password', async () => {
         const response = await updateUser(staticMocks.user.username, { password: 'Short1' })
+
+        expect(response.status).toBe(400)
+      })
+
+      it('Returns bad request when "resources" is not an array', async () => {
+        const response = await updateUser(staticMocks.user.username, {
+          resources: 'users:read',
+        })
+
+        expect(response.status).toBe(400)
+      })
+
+      it('Returns bad request when "resources" contains non-string items', async () => {
+        const response = await updateUser(staticMocks.user.username, {
+          resources: ['users:read', 1],
+        })
 
         expect(response.status).toBe(400)
       })

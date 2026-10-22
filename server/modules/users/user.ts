@@ -5,11 +5,12 @@ export interface UserProps {
   readonly username: string
   readonly email: string
   readonly password: string
+  readonly resources: string[]
   readonly createdAt?: Date
   readonly updatedAt?: Date
 }
 
-export type CreateUserProps = Pick<UserProps, 'username' | 'email' | 'password'>
+export type CreateUserProps = Pick<UserProps, 'username' | 'email' | 'password' | 'resources'>
 
 export type UserDTO = Omit<UserProps, 'password'>
 
@@ -35,6 +36,7 @@ export class User {
       id: crypto.randomUUID(),
       username: props.username,
       password: props.password,
+      resources: props.resources,
       email: props.email.toLowerCase(),
     })
 
@@ -63,6 +65,10 @@ export class User {
     return this.props.password
   }
 
+  get resources(): string[] {
+    return this.props.resources
+  }
+
   get createdAt(): Date | undefined {
     return this.props.createdAt
   }
@@ -75,6 +81,7 @@ export class User {
     return {
       id: this.id,
       username: this.username,
+      resources: this.resources,
       email: this.email,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,

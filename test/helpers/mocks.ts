@@ -11,10 +11,14 @@ type DynamicActions = Partial<{
   unique: boolean
 }>
 
+type UserSeed = Partial<CreateUserProps> & Partial<{ resources: string[] }>
+
+type SeededUser = UserProps & { resources: string[] }
+
 async function createUser(
-  payload?: Partial<CreateUserProps> | null,
+  payload?: UserSeed | null,
   actions?: DynamicActions,
-): Promise<UserProps> {
+): Promise<SeededUser> {
   let data = payload ? { ...payload } : staticMocks.user
 
   if (actions?.unique) {
@@ -82,6 +86,7 @@ export const staticMocks = {
     username: 'JohnDoe',
     email: 'john.doe@example.com',
     password: 'Password123!',
+    resources: [] as string[],
   },
   session: {
     token:

@@ -8,6 +8,7 @@ export const userSchema = z.object({
   username: z.string().trim().nonempty().optional(),
   email: z.string().trim().email().optional(),
   password: z.string().trim().nonempty().min(8).optional(),
+  resources: z.array(z.string()).optional(),
 })
 
 export default defineRouteHandler(async event => {
