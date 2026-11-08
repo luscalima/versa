@@ -5,9 +5,11 @@ import { version as uuidVersion } from 'uuid'
 import type { SessionProps } from '#server/modules/sessions/session'
 import { SessionService } from '#server/modules/sessions/sessionService'
 import setCookieParser from 'set-cookie-parser'
+import type { Resource } from '#server/modules/authorization/resources'
+import { Resource as ResourceValue } from '#server/modules/authorization/resources'
 
 describe('GET /v1/user', async () => {
-  let createdUser: UserProps & { resources: string[] }
+  let createdUser: UserProps & { resources: Resource[] }
   let createdSession: SessionProps
 
   beforeAll(async () => {
@@ -15,7 +17,7 @@ describe('GET /v1/user', async () => {
       now: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
     })
     createdUser = await dynamicMocks.createUser(
-      { resources: ['users:read', 'sessions:write'] },
+      { resources: [ResourceValue.USERS_READ, ResourceValue.SESSIONS_WRITE] },
       { merge: true, rebuild: true },
     )
     createdSession = await dynamicMocks.createSession({ userId: createdUser.id }, { merge: true })

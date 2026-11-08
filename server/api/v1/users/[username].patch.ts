@@ -3,12 +3,13 @@ import { useValidate } from '~~/server/utils/useValidate'
 import { UserService } from '~~/server/modules/users/userService'
 import { NativeHasherAdapter } from '~~/server/infra/adapters/nativeHasherAdapter'
 import { z } from 'zod'
+import { Resource } from '~~/server/modules/authorization/resources'
 
 export const userSchema = z.object({
   username: z.string().trim().nonempty().optional(),
   email: z.string().trim().email().optional(),
   password: z.string().trim().nonempty().min(8).optional(),
-  resources: z.array(z.string()).optional(),
+  resources: z.array(z.nativeEnum(Resource)).optional(),
 })
 
 export default defineRouteHandler(async event => {

@@ -1,11 +1,13 @@
 import { err, ok, type Result } from 'neverthrow'
+import { isResource } from '../authorization/resources'
+import type { Resource } from '../authorization/resources'
 
 export interface UserProps {
   readonly id: string
   readonly username: string
   readonly email: string
   readonly password: string
-  readonly resources: string[]
+  readonly resources: Resource[]
   readonly createdAt?: Date
   readonly updatedAt?: Date
 }
@@ -44,7 +46,10 @@ export class User {
   }
 
   static fromPersistence(props: UserProps): User {
-    const user = new User(props)
+    const user = new User({
+      ...props,
+      resources: props.resources.filter(isResource),
+    })
 
     return user
   }
@@ -65,7 +70,7 @@ export class User {
     return this.props.password
   }
 
-  get resources(): string[] {
+  get resources(): Resource[] {
     return this.props.resources
   }
 

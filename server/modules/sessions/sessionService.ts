@@ -7,6 +7,7 @@ import type { HasherPort } from '../hasher/hasherPort'
 import { Session } from './session'
 import type { SessionRepository } from './sessionRepository'
 import type { GeneratorPort } from '../generator/generatorPort'
+import { Resource } from '../authorization/resources'
 
 export class SessionService {
   static EXPIRATION_IN_MILLISECONDS = 30 * 24 * 60 * 60 * 1000 // 30 days
@@ -42,7 +43,7 @@ export class SessionService {
       )
     }
 
-    if (userResult.resources.includes('read:activation_token')) {
+    if (userResult.resources.includes(Resource.READ_ACTIVATION_TOKEN)) {
       return err(
         forbiddenError({
           message: 'The requested operation could not be completed.',

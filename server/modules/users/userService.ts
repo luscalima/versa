@@ -5,6 +5,7 @@ import type { UserRepository } from './userRepository'
 import { conflictError, notFoundError, unprocessableEntityError } from '~~/server/utils/errors'
 import type { AppError } from '~~/server/utils/errors'
 import type { HasherPort } from '../hasher/hasherPort'
+import { Resource } from '../authorization/resources'
 
 export class UserService {
   constructor(
@@ -17,7 +18,7 @@ export class UserService {
     const transformedPayload = {
       ...payload,
       password,
-      resources: ['read:activation_token'],
+      resources: [Resource.READ_ACTIVATION_TOKEN],
     }
     const user = User.create(transformedPayload)
 

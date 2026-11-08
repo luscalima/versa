@@ -2,6 +2,7 @@ import { fetch } from 'ofetch'
 import setCookieParser from 'set-cookie-parser'
 import { version as uuidVersion } from 'uuid'
 import { SessionService } from '#server/modules/sessions/sessionService'
+import { Resource } from '#server/modules/authorization/resources'
 import {
   api,
   clearMailInbox,
@@ -113,7 +114,7 @@ describe('Account registration and activation flow', () => {
         id: data.id,
         username: USER_PAYLOAD.username,
         email: USER_PAYLOAD.email,
-        resources: ['read:activation_token'],
+        resources: [Resource.READ_ACTIVATION_TOKEN],
         createdAt: data.createdAt,
         updatedAt: data.updatedAt,
       })
