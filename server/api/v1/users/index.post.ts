@@ -3,6 +3,9 @@ import { z } from 'zod'
 import { useValidate } from '~~/server/utils/useValidate'
 import { UserService } from '~~/server/modules/users/userService'
 import { NativeHasherAdapter } from '~~/server/infra/adapters/nativeHasherAdapter'
+import { ActivationService } from '~~/server/modules/activation/activationService'
+import { NodemailerMailAdapter } from '~~/server/infra/adapters/nodemailerMailAdapter'
+import { KnexActivationRepository } from '~~/server/infra/repositories/knexActivationRepository'
 
 export const userSchema = z.object({
   username: z.string().nonempty().trim(),
@@ -18,16 +21,29 @@ export default defineRouteHandler(async event => {
     return payload.error
   }
 
-  const repository = new KnexUserRepository(useDatabase())
+  const runtimeConfig = useRuntimeConfig()
+  const db = useDatabase()
   const hasher = new NativeHasherAdapter()
-  const service = new UserService(repository, hasher)
-  const result = await service.create(payload.value)
+  const mailer = new NodemailerMailAdapter(runtimeConfig.mail)
+  const userRepository = new KnexUserRepository(db)
+  const userService = new UserService(userRepository, hasher)
+  const activationRepository = new KnexActivationRepository(db)
+  const activationService = new ActivationService(activationRepository, mailer)
+  const userResult = await userService.create(payload.value)
 
-  if (result.isErr()) {
-    return result.error
+  if (userResult.isErr()) {
+    return userResult.error
   }
+
+  const activationResult = await activationService.create(userResult.value)
+
+  if (activationResult.isErr()) {
+    return activationResult.error
+  }
+
+  await activationService.sendNewUserEmail(userResult.value, activationResult.value)
 
   setResponseStatus(event, 201)
 
-  return result.value.toDTO()
+  return userResult.value.toDTO()
 })

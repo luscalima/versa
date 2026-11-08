@@ -7,6 +7,7 @@ export default defineNuxtConfig({
     componentDir: '@/components/ui',
   },
   runtimeConfig: {
+    appUrl: process.env.APP_URL,
     database: {
       host: process.env.DB_HOST,
       port: Number(process.env.DB_PORT),
