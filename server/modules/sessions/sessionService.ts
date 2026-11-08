@@ -1,7 +1,7 @@
 import { err, ok, type Result } from 'neverthrow'
 import type { User } from '../users/user'
 import type { UserRepository } from '../users/userRepository'
-import { unauthorizedError } from '~~/server/utils/errors'
+import { forbiddenError, unauthorizedError } from '~~/server/utils/errors'
 import type { AppError } from '~~/server/utils/errors'
 import type { HasherPort } from '../hasher/hasherPort'
 import { Session } from './session'
@@ -30,11 +30,11 @@ export class SessionService {
   }
 
   async authenticate(email: string, password: string): Promise<Result<User, AppError>> {
-    const emailResult = await this.userRepository.findByEmail(email)
-    const passwordToTest = emailResult?.password ?? this.hasher.dummyHash
+    const userResult = await this.userRepository.findByEmail(email)
+    const passwordToTest = userResult?.password ?? this.hasher.dummyHash
     const passwordResult = await this.hasher.compare(password, passwordToTest)
 
-    if (!emailResult || !passwordResult) {
+    if (!userResult || !passwordResult) {
       return err(
         unauthorizedError({
           message: 'Authentication data does not match',
@@ -42,7 +42,15 @@ export class SessionService {
       )
     }
 
-    return ok(emailResult)
+    if (userResult.resources.includes('read:activation_token')) {
+      return err(
+        forbiddenError({
+          message: 'The requested operation could not be completed.',
+        }),
+      )
+    }
+
+    return ok(userResult)
   }
 
   async getValid(token: string): Promise<Result<Session, AppError>> {

@@ -70,26 +70,30 @@ export function internalServerError(opts: AppErrorOptions) {
   return createError(errorOptions(opts.statusCode ?? 500, 'INTERNAL_SERVER_ERROR', opts))
 }
 
-export function methodNotAllowedError(opts: AppErrorOptions) {
-  return createError(errorOptions(405, 'METHOD_NOT_ALLOWED', opts))
-}
-
 export function badRequestError(opts: AppErrorOptions) {
   return createError(errorOptions(400, 'BAD_REQUEST', opts))
 }
 
-export function unprocessableEntityError(opts: AppErrorOptions) {
-  return createError(errorOptions(422, 'UNPROCESSABLE_ENTITY', opts))
+export function unauthorizedError(opts: AppErrorOptions) {
+  return createError(errorOptions(401, 'UNAUTHORIZED', opts))
 }
 
-export function conflictError(opts: AppErrorOptions) {
-  return createError(errorOptions(409, 'CONFLICT', opts))
+export function forbiddenError(opts: AppErrorOptions) {
+  return createError(errorOptions(403, 'ACCESS_DENIED', opts))
 }
 
 export function notFoundError(opts: AppErrorOptions) {
   return createError(errorOptions(404, 'NOT_FOUND', opts))
 }
 
-export function unauthorizedError(opts: AppErrorOptions) {
-  return createError(errorOptions(401, 'UNAUTHORIZED', opts))
+export function methodNotAllowedError(opts: AppErrorOptions) {
+  return createError(errorOptions(405, 'METHOD_NOT_ALLOWED', opts))
+}
+
+export function conflictError(opts: AppErrorOptions) {
+  return createError(errorOptions(409, 'CONFLICT', opts))
+}
+
+export function unprocessableEntityError(opts: AppErrorOptions) {
+  return createError(errorOptions(422, 'UNPROCESSABLE_ENTITY', opts))
 }
