@@ -3,13 +3,12 @@ import {
   api,
   clearDatabase,
   destroyDatabase,
-  getDatabase,
   restoreDatabase,
   rebuildDatabase,
+  userRepository,
 } from '#test/helpers'
 import { version as uuidVersion } from 'uuid'
 import { NativeHasherAdapter } from '#server/infra/adapters/nativeHasherAdapter'
-import { KnexUserRepository } from '#server/infra/repositories/knexUserRepository'
 import { Resource } from '#server/modules/authorization/resources'
 
 describe('POST /v1/users', async () => {
@@ -69,7 +68,7 @@ describe('POST /v1/users', async () => {
       expect(Date.parse(userData.createdAt)).not.toBeNaN()
       expect(Date.parse(userData.updatedAt)).not.toBeNaN()
 
-      const repository = new KnexUserRepository(await getDatabase())
+      const repository = await userRepository()
       const hasher = new NativeHasherAdapter()
       const user = (await repository.findByUsername(userPayload.username))!
       const correctCompareResult = await hasher.compare(userPayload.password, user.password)

@@ -1,5 +1,6 @@
 import { loadEnv } from 'vite'
-import { getDatabase } from './database'
+import type { ActivationToken } from '#server/modules/activation/activationToken'
+import { activationRepository } from './repositories'
 
 const env = loadEnv('', process.cwd(), '')
 const baseUrl = `http://${env.MAIL_HOST}:${env.LOCAL_MAIL_WEB_PORT}/api/v1`
@@ -10,15 +11,6 @@ type Email = {
   To: { Name: string; Address: string }[]
   Subject: string
   Text: string
-}
-
-type ActivationToken = {
-  id: string
-  userId: string
-  usedAt: Date | null
-  expiresAt: Date
-  createdAt: Date
-  updatedAt: Date
 }
 
 export async function clearMailInbox() {
@@ -55,11 +47,8 @@ export function mailHealthyStatus() {
   return `${baseUrl}/info`
 }
 
-export async function getValidActivationTokenById(
-  id: string,
-): Promise<ActivationToken | undefined> {
-  const table = 'user_activation_tokens'
-  const db = await getDatabase()
+export async function getValidActivationTokenById(id: string): Promise<ActivationToken | null> {
+  const repository = await activationRepository()
 
-  return db(table).where({ id }).whereNull('usedAt').where('expiresAt', '>', new Date()).first()
+  return repository.findValidById(id)
 }

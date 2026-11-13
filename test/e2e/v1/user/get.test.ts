@@ -1,5 +1,5 @@
 import { fetch } from 'ofetch'
-import { api, destroyDatabase, dynamicMocks } from '#test/helpers'
+import { api, destroyDatabase, dynamicMocks, sessionRepository } from '#test/helpers'
 import type { UserProps } from '#server/modules/users/user'
 import { version as uuidVersion } from 'uuid'
 import type { SessionProps } from '#server/modules/sessions/session'
@@ -51,17 +51,19 @@ describe('GET /v1/user', async () => {
       expect(uuidVersion(userData.id)).toBe(4)
 
       // Session renewal assertions
-      const renewedSession = await dynamicMocks.getSession()
+      const sessionRepo = await sessionRepository()
+      const renewedSession = await sessionRepo.findValid(createdSession.token)
 
-      expect(renewedSession.expiresAt > createdSession.expiresAt).toBe(true)
-      expect(renewedSession.updatedAt! > createdSession.updatedAt!).toBe(true)
+      expect(renewedSession).not.toBeNull()
+      expect(renewedSession!.expiresAt > createdSession.expiresAt).toBe(true)
+      expect(renewedSession!.updatedAt! > createdSession.updatedAt!).toBe(true)
 
       // Set-Cookie assertions
       const setCookie = setCookieParser(response, { map: true })
 
       expect(setCookie.session_id).toEqual({
         name: 'session_id',
-        value: renewedSession.token,
+        value: renewedSession!.token,
         maxAge: SessionService.EXPIRATION_IN_MILLISECONDS / 1000,
         path: '/',
         httpOnly: true,

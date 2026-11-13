@@ -5,11 +5,10 @@ import {
   downDatabase,
   dynamicMocks,
   staticMocks,
-  getDatabase,
   restoreDatabase,
+  userRepository,
 } from '#test/helpers'
 import { NativeHasherAdapter } from '#server/infra/adapters/nativeHasherAdapter'
-import { KnexUserRepository } from '#server/infra/repositories/knexUserRepository'
 import { Resource } from '#server/modules/authorization/resources'
 
 describe('PATCH /v1/users/:username', async () => {
@@ -43,7 +42,7 @@ describe('PATCH /v1/users/:username', async () => {
         expect(data.email).toBe(staticMocks.user.email)
         expect(data).not.toHaveProperty('password')
 
-        const repository = new KnexUserRepository(await getDatabase())
+        const repository = await userRepository()
         const updated = await repository.findByUsername(newUsername)
 
         expect(updated).not.toBeNull()
@@ -75,7 +74,7 @@ describe('PATCH /v1/users/:username', async () => {
         expect(data.email).toBe(staticMocks.user.email)
         expect(data).not.toHaveProperty('password')
 
-        const repository = new KnexUserRepository(await getDatabase())
+        const repository = await userRepository()
         const user = await repository.findByUsername(staticMocks.user.username)
 
         expect(user!.toDTO()).toMatchObject({ resources: newResources })
@@ -105,7 +104,7 @@ describe('PATCH /v1/users/:username', async () => {
 
         expect(data.resources).toEqual([])
 
-        const repository = new KnexUserRepository(await getDatabase())
+        const repository = await userRepository()
         const user = await repository.findByUsername(staticMocks.user.username)
 
         expect(user!.toDTO()).toMatchObject({ resources: [] })
@@ -117,7 +116,7 @@ describe('PATCH /v1/users/:username', async () => {
 
         expect(response.status).toBe(200)
 
-        const repository = new KnexUserRepository(await getDatabase())
+        const repository = await userRepository()
         const hasher = new NativeHasherAdapter()
         const user = (await repository.findByUsername(staticMocks.user.username))!
         const fallsBackToPlainText = user.password === newPassword

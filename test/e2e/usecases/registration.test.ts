@@ -152,7 +152,8 @@ describe('Account registration and activation flow', () => {
 
       const activationToken = await getValidActivationTokenById(tokenId)
 
-      expect(activationToken).toBeDefined()
+      expect(activationToken).not.toBeNull()
+      expect(activationToken!.id).toBe(tokenId)
       expect(activationToken!.userId).toBe(user.id)
       expect(activationToken!.usedAt).toBeNull()
 
