@@ -5,10 +5,11 @@ import { SessionService } from '#server/modules/sessions/sessionService'
 import { Resource } from '#server/modules/authorization/resources'
 import {
   api,
+  appUrl,
   clearMailInbox,
   destroyDatabase,
-  getActivationTokenByUserId,
   getLastEmail,
+  getValidActivationTokenById,
   rebuildDatabase,
 } from '#test/helpers'
 
@@ -20,7 +21,7 @@ const USER_PAYLOAD = {
 
 const ACTIVATION_ENDPOINT = '/v1/users/activation'
 const ACTIVATION_EMAIL_SUBJECT = 'Activate your account'
-const ACTIVATION_TOKEN_PATTERN = /\/([a-z0-9-]*)$/im
+const ACTIVATION_TOKEN_PATTERN = /\/([a-fA-F0-9-]*)$/im
 const ACTIVATION_TOKEN_EXPIRATION_IN_MILLISECONDS = 24 * 60 * 60 * 1000
 const ACTIVATION_TOKEN_SENDER_EMAIL = 'contact@versa.com'
 
@@ -142,21 +143,23 @@ describe('Account registration and activation flow', () => {
 
   describe('Activation email delivery', () => {
     it('sends an activation email to the registered address', async () => {
+      const appUrlValue = appUrl()
       const response = await registerUser()
       const user = await response.json()
 
       const email = await getLastActivationEmail()
-      const token = extractActivationToken(email.Text)
+      const tokenId = extractActivationToken(email.Text)
 
-      const activationToken = await getActivationTokenByUserId(user.id)
+      const activationToken = await getValidActivationTokenById(tokenId)
 
       expect(activationToken).toBeDefined()
-      expect(token).toBe(activationToken!.id)
+      expect(activationToken!.userId).toBe(user.id)
+      expect(activationToken!.usedAt).toBeNull()
 
       expect(email.To.map(recipient => recipient.Address)).toContain(USER_PAYLOAD.email)
       expect(email.Subject).toBe(ACTIVATION_EMAIL_SUBJECT)
       expect(email.Text).toContain(USER_PAYLOAD.username)
-      expect(email.Text).toMatch(ACTIVATION_TOKEN_PATTERN)
+      expect(email.Text).toContain(`${appUrlValue}/register/activate/${tokenId}`)
       expect(email.From.Address).toBe(ACTIVATION_TOKEN_SENDER_EMAIL)
     })
 
