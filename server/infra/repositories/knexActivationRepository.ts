@@ -1,4 +1,5 @@
 import type { Knex } from 'knex'
+import { ActivationToken } from '~~/server/modules/activation/activationToken'
 import type { ActivationRepository } from '~~/server/modules/activation/activationRepository'
 import type { User } from '~~/server/modules/users/user'
 
@@ -16,5 +17,19 @@ export class KnexActivationRepository implements ActivationRepository {
       .returning('*')
 
     return saveResult.id
+  }
+
+  async findValidById(id: string): Promise<ActivationToken | null> {
+    const token = await this.db(this.tokensTable)
+      .where({ id })
+      .whereNull('usedAt')
+      .where('expiresAt', '>', new Date())
+      .first()
+
+    if (!token) {
+      return null
+    }
+
+    return ActivationToken.fromPersistence(token)
   }
 }
