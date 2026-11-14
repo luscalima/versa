@@ -48,6 +48,7 @@ ${appUrl}/register/activate/${token}
     if (!token) {
       return err(
         badRequestError({
+          code: 'TOKEN_UNAVAILABLE',
           message: 'The provided token is invalid or expired.',
         }),
       )
