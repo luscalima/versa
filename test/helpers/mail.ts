@@ -1,6 +1,4 @@
 import { loadEnv } from 'vite'
-import type { ActivationToken } from '#server/modules/activation/activationToken'
-import { activationRepository } from './repositories'
 
 const env = loadEnv('', process.cwd(), '')
 const baseUrl = `http://${env.MAIL_HOST}:${env.LOCAL_MAIL_WEB_PORT}/api/v1`
@@ -45,10 +43,4 @@ export async function getLastEmail() {
 
 export function mailHealthyStatus() {
   return `${baseUrl}/info`
-}
-
-export async function getValidActivationTokenById(id: string): Promise<ActivationToken | null> {
-  const repository = await activationRepository()
-
-  return repository.findValidById(id)
 }
