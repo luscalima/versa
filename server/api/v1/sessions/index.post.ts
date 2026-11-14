@@ -1,5 +1,5 @@
 import { KnexUserRepository } from '~~/server/infra/repositories/knexUserRepository'
-import { useValidate } from '~~/server/utils/useValidate'
+import { useValidateBody } from '~~/server/utils/useValidateBody'
 import { NativeHasherAdapter } from '~~/server/infra/adapters/nativeHasherAdapter'
 import { SessionService } from '~~/server/modules/sessions/sessionService'
 import { KnexSessionRepository } from '~~/server/infra/repositories/knexSessionRepository'
@@ -12,7 +12,11 @@ export const sessionSchema = z.object({
 })
 
 export default defineRouteHandler(async event => {
-  const payload = await useValidate(event, sessionSchema, 'User authentication validation failed.')
+  const payload = await useValidateBody(
+    event,
+    sessionSchema,
+    'User authentication validation failed.',
+  )
 
   if (payload.isErr()) {
     return payload.error
