@@ -3,12 +3,12 @@ import setCookieParser from 'set-cookie-parser'
 import { version as uuidVersion } from 'uuid'
 import { SessionService } from '#server/modules/sessions/sessionService'
 import { Resource } from '#server/modules/authorization/resources'
-import { ActivationService } from '#server/modules/activation/activationService'
 import {
   api,
   appUrl,
   clearMailInbox,
   destroyDatabase,
+  expireActivationTokenById,
   getLastEmail,
   getValidActivationTokenById,
   rebuildDatabase,
@@ -204,16 +204,16 @@ describe('Account registration and activation flow', () => {
     it('does not allow the same activation token to be used twice', async () => {
       const token = await registerUserAndGetActivationToken()
 
-      expect((await requestAccountActivation(token)).status).toBe(204)
+      expect((await requestAccountActivation(token)).status).toBe(200)
 
       const response = await requestAccountActivation(token)
 
-      expect(response.status).toBe(409)
+      expect(response.status).toBe(400)
       expect(await response.json()).toEqual({
-        statusCode: 409,
-        message: 'Activation token has already been used',
+        statusCode: 400,
+        message: 'The provided token is invalid or expired.',
         data: {
-          code: 'ACTIVATION_TOKEN_ALREADY_USED',
+          code: 'TOKEN_UNAVAILABLE',
         },
       })
     })
@@ -226,9 +226,9 @@ describe('Account registration and activation flow', () => {
       expect(response.status).toBe(400)
       expect(await response.json()).toEqual({
         statusCode: 400,
-        message: 'Activation token is invalid',
+        message: 'The provided token is invalid or expired.',
         data: {
-          code: 'INVALID_ACTIVATION_TOKEN',
+          code: 'TOKEN_UNAVAILABLE',
         },
       })
     })
@@ -251,24 +251,18 @@ describe('Account registration and activation flow', () => {
     it('rejects an expired activation token', async () => {
       const token = await registerUserAndGetActivationToken()
 
-      vi.useFakeTimers({
-        now: new Date(Date.now() + ActivationService.EXPIRATION_IN_MILLISECONDS + 1000),
+      await expireActivationTokenById(token)
+
+      const response = await requestAccountActivation(token)
+
+      expect(response.status).toBe(400)
+      expect(await response.json()).toEqual({
+        statusCode: 400,
+        message: 'The provided token is invalid or expired.',
+        data: {
+          code: 'TOKEN_UNAVAILABLE',
+        },
       })
-
-      try {
-        const response = await requestAccountActivation(token)
-
-        expect(response.status).toBe(410)
-        expect(await response.json()).toEqual({
-          statusCode: 410,
-          message: 'Activation token has expired',
-          data: {
-            code: 'ACTIVATION_TOKEN_EXPIRED',
-          },
-        })
-      } finally {
-        vi.useRealTimers()
-      }
     })
   })
 
