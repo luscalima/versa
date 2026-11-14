@@ -17,7 +17,7 @@ describe('GET /v1/user', async () => {
       now: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
     })
     createdUser = await dynamicMocks.createUser(
-      { resources: [ResourceValue.USERS_READ, ResourceValue.SESSIONS_WRITE] },
+      { resources: [ResourceValue.READ_USERS, ResourceValue.CREATE_SESSIONS] },
       { merge: true, rebuild: true },
     )
     createdSession = await dynamicMocks.createSession({ userId: createdUser.id }, { merge: true })

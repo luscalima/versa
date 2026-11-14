@@ -1,10 +1,12 @@
 import type { Knex } from 'knex'
 import { ActivationToken } from '~~/server/modules/activation/activationToken'
 import type { ActivationRepository } from '~~/server/modules/activation/activationRepository'
+import type { Resource } from '~~/server/modules/authorization/resources'
 import type { User } from '~~/server/modules/users/user'
 
 export class KnexActivationRepository implements ActivationRepository {
   private readonly tokensTable = 'user_activation_tokens'
+  private readonly usersTable = 'users'
 
   constructor(private readonly db: Knex) {}
 
@@ -31,5 +33,26 @@ export class KnexActivationRepository implements ActivationRepository {
     }
 
     return ActivationToken.fromPersistence(token)
+  }
+
+  async activate(id: string, resources: Resource[]): Promise<ActivationToken | null> {
+    return this.db.transaction(async trx => {
+      const now = trx.fn.now()
+
+      const [token] = await trx(this.tokensTable)
+        .where({ id })
+        .whereNull('usedAt')
+        .where('expiresAt', '>', now)
+        .update({ usedAt: now, updatedAt: now })
+        .returning('*')
+
+      if (!token) {
+        return null
+      }
+
+      await trx(this.usersTable).where({ id: token.userId }).update({ resources, updatedAt: now })
+
+      return ActivationToken.fromPersistence(token)
+    })
   }
 }

@@ -3,6 +3,7 @@ import setCookieParser from 'set-cookie-parser'
 import { version as uuidVersion } from 'uuid'
 import { SessionService } from '#server/modules/sessions/sessionService'
 import { Resource } from '#server/modules/authorization/resources'
+import { ActivationService } from '#server/modules/activation/activationService'
 import {
   api,
   appUrl,
@@ -11,6 +12,7 @@ import {
   getLastEmail,
   getValidActivationTokenById,
   rebuildDatabase,
+  userRepository,
 } from '#test/helpers'
 
 const USER_PAYLOAD = {
@@ -19,10 +21,9 @@ const USER_PAYLOAD = {
   password: 'Password123!',
 }
 
-const ACTIVATION_ENDPOINT = '/v1/users/activation'
+const ACTIVATION_ENDPOINT = '/v1/activations'
 const ACTIVATION_EMAIL_SUBJECT = 'Activate your account'
 const ACTIVATION_TOKEN_PATTERN = /\/([a-fA-F0-9-]*)$/im
-const ACTIVATION_TOKEN_EXPIRATION_IN_MILLISECONDS = 24 * 60 * 60 * 1000
 const ACTIVATION_TOKEN_SENDER_EMAIL = 'contact@versa.com'
 
 describe('Account registration and activation flow', () => {
@@ -43,12 +44,10 @@ describe('Account registration and activation flow', () => {
     })
   }
 
-  async function requestAccountActivation(token?: string) {
-    return fetch(api(ACTIVATION_ENDPOINT), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(token === undefined ? {} : { token }),
-    })
+  async function requestAccountActivation(tokenId?: string) {
+    const url = `${ACTIVATION_ENDPOINT}/${tokenId}`
+
+    return fetch(api(url), { method: 'PATCH' })
   }
 
   async function requestSessionCreation(payload = USER_PAYLOAD) {
@@ -185,10 +184,21 @@ describe('Account registration and activation flow', () => {
   describe('Account activation', () => {
     it('activates the account with a valid token', async () => {
       const token = await registerUserAndGetActivationToken()
-
       const response = await requestAccountActivation(token)
 
-      expect(response.status).toBe(204)
+      expect(response.status).toBe(200)
+
+      const responseData = await response.json()
+
+      expect(Date.parse(responseData.usedAt)).not.toBeNaN()
+
+      const repository = await userRepository()
+      const activatedUser = await repository.findByUsername(USER_PAYLOAD.username)
+      expect(activatedUser?.resources).toEqual([
+        Resource.CREATE_SESSIONS,
+        Resource.READ_SESSIONS,
+        Resource.UPDATE_USERS,
+      ])
     })
 
     it('does not allow the same activation token to be used twice', async () => {
@@ -242,7 +252,7 @@ describe('Account registration and activation flow', () => {
       const token = await registerUserAndGetActivationToken()
 
       vi.useFakeTimers({
-        now: new Date(Date.now() + ACTIVATION_TOKEN_EXPIRATION_IN_MILLISECONDS + 1000),
+        now: new Date(Date.now() + ActivationService.EXPIRATION_IN_MILLISECONDS + 1000),
       })
 
       try {

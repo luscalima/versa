@@ -1,10 +1,12 @@
 import type { Result } from 'neverthrow'
-import { ok } from 'neverthrow'
+import { err, ok } from 'neverthrow'
 import type { MailPort } from '../mail/mailPort'
 import type { User } from '../users/user'
 import type { ActivationRepository } from './activationRepository'
 import type { AppError } from '~~/server/utils/errors'
 import { useAppUrl } from '~~/server/utils/useAppUrl'
+import { Resource } from '../authorization/resources'
+import type { ActivationToken } from './activationToken'
 
 export class ActivationService {
   static EXPIRATION_IN_MILLISECONDS = 15 * 60 * 1000
@@ -34,5 +36,23 @@ ${appUrl}/register/activate/${token}
 `,
       to: user.email,
     })
+  }
+
+  async activate(tokenId: string): Promise<Result<ActivationToken, AppError>> {
+    const token = await this.activationRepository.activate(tokenId, [
+      Resource.CREATE_SESSIONS,
+      Resource.READ_SESSIONS,
+      Resource.UPDATE_USERS,
+    ])
+
+    if (!token) {
+      return err(
+        badRequestError({
+          message: 'The provided token is invalid or expired.',
+        }),
+      )
+    }
+
+    return ok(token)
   }
 }

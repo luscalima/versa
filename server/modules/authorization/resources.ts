@@ -1,9 +1,10 @@
 export const Resource = {
   READ_ACTIVATION_TOKEN: 'read:activation_token',
-  USERS_READ: 'users:read',
-  USERS_WRITE: 'users:write',
-  SESSIONS_READ: 'sessions:read',
-  SESSIONS_WRITE: 'sessions:write',
+  READ_USERS: 'read:users',
+  CREATE_USERS: 'create:users',
+  READ_SESSIONS: 'read:sessions',
+  CREATE_SESSIONS: 'create:sessions',
+  UPDATE_USERS: 'update:users',
 } as const
 
 export type Resource = (typeof Resource)[keyof typeof Resource]

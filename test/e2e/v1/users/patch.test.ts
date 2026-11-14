@@ -62,7 +62,7 @@ describe('PATCH /v1/users/:username', async () => {
       })
 
       it('Updates the "resources" only', async () => {
-        const newResources = [Resource.USERS_READ, Resource.SESSIONS_WRITE]
+        const newResources = [Resource.READ_USERS, Resource.CREATE_SESSIONS]
         const response = await updateUser(staticMocks.user.username, { resources: newResources })
 
         expect(response.status).toBe(200)
@@ -81,7 +81,7 @@ describe('PATCH /v1/users/:username', async () => {
       })
 
       it('Keeps the existing "resources" when not provided', async () => {
-        const resources = [Resource.USERS_READ]
+        const resources = [Resource.READ_USERS]
         await dynamicMocks.createUser({ resources }, { merge: true, rebuild: true })
 
         const response = await updateUser(staticMocks.user.username, { username: 'JaneDoe' })
@@ -94,7 +94,7 @@ describe('PATCH /v1/users/:username', async () => {
       })
 
       it('Clears the "resources" when an empty array is provided', async () => {
-        await updateUser(staticMocks.user.username, { resources: [Resource.USERS_READ] })
+        await updateUser(staticMocks.user.username, { resources: [Resource.READ_USERS] })
 
         const response = await updateUser(staticMocks.user.username, { resources: [] })
 
@@ -137,7 +137,7 @@ describe('PATCH /v1/users/:username', async () => {
         const newPayload = {
           username: 'JaneDoe',
           email: 'jane.doe@example.com',
-          resources: [Resource.USERS_READ, Resource.USERS_WRITE],
+          resources: [Resource.READ_USERS, Resource.UPDATE_USERS],
         }
         const response = await updateUser(staticMocks.user.username, newPayload)
 
@@ -262,7 +262,7 @@ describe('PATCH /v1/users/:username', async () => {
 
       it('Returns bad request when "resources" is not an array', async () => {
         const response = await updateUser(staticMocks.user.username, {
-          resources: Resource.USERS_READ,
+          resources: Resource.READ_USERS,
         })
 
         expect(response.status).toBe(400)
@@ -270,7 +270,7 @@ describe('PATCH /v1/users/:username', async () => {
 
       it('Returns bad request when "resources" contains non-string items', async () => {
         const response = await updateUser(staticMocks.user.username, {
-          resources: [Resource.USERS_READ, 1],
+          resources: [Resource.READ_USERS, 1],
         })
 
         expect(response.status).toBe(400)

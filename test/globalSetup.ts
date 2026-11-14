@@ -1,5 +1,5 @@
 import { loadEnv } from 'vite'
-import { api, mailHealthyStatus } from './helpers'
+import { api, destroyDatabase, mailHealthyStatus, unlockDatabase } from './helpers'
 import waitOn from 'wait-on'
 import pg from 'pg'
 
@@ -40,4 +40,12 @@ async function waitForAllServices() {
 export async function setup() {
   await setupDatabase()
   await waitForAllServices()
+}
+
+export async function teardown() {
+  try {
+    await unlockDatabase()
+  } finally {
+    await destroyDatabase()
+  }
 }

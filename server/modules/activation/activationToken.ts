@@ -7,6 +7,7 @@ export interface ActivationTokenProps {
   readonly updatedAt?: Date
 }
 
+export type ActivationTokenDTO = ActivationTokenProps
 export class ActivationToken {
   private constructor(private readonly props: ActivationTokenProps) {}
 
@@ -36,5 +37,16 @@ export class ActivationToken {
 
   get updatedAt(): Date | undefined {
     return this.props.updatedAt
+  }
+
+  toDTO(): ActivationTokenDTO {
+    return {
+      id: this.id,
+      userId: this.userId,
+      usedAt: this.usedAt,
+      expiresAt: this.expiresAt,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+    }
   }
 }
