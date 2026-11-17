@@ -21,7 +21,15 @@ export type UserError = {
   message: string
 }
 
-export class User {
+export interface UserContext extends Omit<UserProps, 'password' | 'createdAt' | 'updatedAt'> {
+  readonly isAnonymous: boolean
+}
+
+export const ANONYMOUS_USER_ID = 'anonymous'
+
+export class User implements UserContext {
+  readonly isAnonymous = false
+
   private constructor(private readonly props: UserProps) {}
 
   static create(props: CreateUserProps): Result<User, UserError> {
@@ -92,4 +100,12 @@ export class User {
       updatedAt: this.updatedAt,
     }
   }
+}
+
+export class AnonymousUser implements UserContext {
+  readonly id = ANONYMOUS_USER_ID
+  readonly username = ANONYMOUS_USER_ID
+  readonly email = ''
+  readonly resources: Resource[] = []
+  readonly isAnonymous = true
 }
