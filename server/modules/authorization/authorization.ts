@@ -29,6 +29,10 @@ export function authorize(
   permissions: readonly Permission[],
   mode: AuthorizationMode = 'all',
 ): Result<UserContext, AppError> {
+  if (hasPermissions(user, permissions, mode)) {
+    return ok(user)
+  }
+
   if (user.isAnonymous) {
     return err(
       unauthorizedError({
@@ -37,16 +41,12 @@ export function authorize(
     )
   }
 
-  if (!hasPermissions(user, permissions, mode)) {
-    return err(
-      forbiddenError({
-        message: 'You do not have permission to perform this action',
-        data: {
-          missing: permissions.filter(permission => !hasPermission(user, permission)),
-        },
-      }),
-    )
-  }
-
-  return ok(user)
+  return err(
+    forbiddenError({
+      message: 'You do not have permission to perform this action',
+      data: {
+        missing: permissions.filter(permission => !hasPermission(user, permission)),
+      },
+    }),
+  )
 }
