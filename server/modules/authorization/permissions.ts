@@ -1,4 +1,4 @@
-export const Permission = {
+export const Permissions = {
   READ_ACTIVATION_TOKEN: 'read:activation_token',
   READ_USERS: 'read:users',
   CREATE_USERS: 'create:users',
@@ -7,10 +7,10 @@ export const Permission = {
   UPDATE_USERS: 'update:users',
 } as const
 
-export type Permission = (typeof Permission)[keyof typeof Permission]
+export type Permissions = (typeof Permissions)[keyof typeof Permissions]
 
-export const PERMISSIONS = Object.values(Permission) as Permission[]
+export const PERMISSIONS = Object.values(Permissions) as Permissions[]
 
-export function isPermission(value: string): value is Permission {
-  return PERMISSIONS.includes(value as Permission)
+export function isPermission(value: string): value is Permissions {
+  return PERMISSIONS.includes(value as Permissions)
 }

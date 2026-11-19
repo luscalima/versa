@@ -2,17 +2,17 @@ import { err, ok, type Result } from 'neverthrow'
 import type { AppError } from '~~/server/utils/errors'
 import { forbiddenError, unauthorizedError } from '~~/server/utils/errors'
 import type { UserContext } from '../users/user'
-import type { Permission } from './permissions'
+import type { Permissions } from './permissions'
 
 export type AuthorizationMode = 'all' | 'any'
 
-export function hasPermission(user: UserContext, permission: Permission): boolean {
+export function hasPermission(user: UserContext, permission: Permissions): boolean {
   return user.permissions.includes(permission)
 }
 
 export function hasPermissions(
   user: UserContext,
-  permissions: readonly Permission[],
+  permissions: readonly Permissions[],
   mode: AuthorizationMode = 'all',
 ): boolean {
   if (permissions.length === 0) {
@@ -26,7 +26,7 @@ export function hasPermissions(
 
 export function authorize(
   user: UserContext,
-  permissions: readonly Permission[],
+  permissions: readonly Permissions[],
   mode: AuthorizationMode = 'all',
 ): Result<UserContext, AppError> {
   if (hasPermissions(user, permissions, mode)) {

@@ -5,11 +5,11 @@ import { version as uuidVersion } from 'uuid'
 import type { SessionProps } from '#server/modules/sessions/session'
 import { SessionService } from '#server/modules/sessions/sessionService'
 import setCookieParser from 'set-cookie-parser'
-import type { Permission } from '#server/modules/authorization/permissions'
-import { Permission as PermissionValue } from '#server/modules/authorization/permissions'
+import type { Permissions } from '#server/modules/authorization/permissions'
+import { Permissions as PermissionValue } from '#server/modules/authorization/permissions'
 
 describe('GET /v1/user', async () => {
-  let createdUser: UserProps & { permissions: Permission[] }
+  let createdUser: UserProps & { permissions: Permissions[] }
   let createdSession: SessionProps
 
   beforeAll(async () => {

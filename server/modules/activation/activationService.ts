@@ -5,7 +5,7 @@ import type { User } from '../users/user'
 import type { ActivationRepository } from './activationRepository'
 import type { AppError } from '~~/server/utils/errors'
 import { useAppUrl } from '~~/server/utils/useAppUrl'
-import { Permission } from '../authorization/permissions'
+import { Permissions } from '../authorization/permissions'
 import type { ActivationToken } from './activationToken'
 
 export class ActivationService {
@@ -40,9 +40,9 @@ ${appUrl}/register/activate/${token}
 
   async activate(tokenId: string): Promise<Result<ActivationToken, AppError>> {
     const token = await this.activationRepository.activate(tokenId, [
-      Permission.CREATE_SESSIONS,
-      Permission.READ_SESSIONS,
-      Permission.UPDATE_USERS,
+      Permissions.CREATE_SESSIONS,
+      Permissions.READ_SESSIONS,
+      Permissions.UPDATE_USERS,
     ])
 
     if (!token) {

@@ -9,7 +9,7 @@ import {
   staticMocks,
 } from '#test/helpers'
 import type { UserProps } from '#server/modules/users/user'
-import { Permission } from '#server/modules/authorization/permissions'
+import { Permissions } from '#server/modules/authorization/permissions'
 import { SessionService } from '#server/modules/sessions/sessionService'
 import { version as uuidVersion } from 'uuid'
 import setCookieParser from 'set-cookie-parser'
@@ -19,7 +19,7 @@ describe('POST /v1/sessions', async () => {
 
   beforeEach(async () => {
     user = await dynamicMocks.createUser(
-      { permissions: [Permission.CREATE_SESSIONS] },
+      { permissions: [Permissions.CREATE_SESSIONS] },
       { merge: true, rebuild: true },
     )
   })
@@ -169,7 +169,7 @@ describe('POST /v1/sessions', async () => {
         username: 'JaneDoe',
         email: 'jane.doe@example.com',
         password: 'Password123!',
-        permissions: [Permission.READ_USERS],
+        permissions: [Permissions.READ_USERS],
       })
 
       const response = await requestSessionCreation({
@@ -183,7 +183,7 @@ describe('POST /v1/sessions', async () => {
         message: 'You do not have permission to perform this action',
         data: {
           code: 'ACCESS_DENIED',
-          missing: [Permission.CREATE_SESSIONS],
+          missing: [Permissions.CREATE_SESSIONS],
         },
       })
 

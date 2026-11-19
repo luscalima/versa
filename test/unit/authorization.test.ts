@@ -3,14 +3,14 @@ import {
   hasPermission,
   hasPermissions,
 } from '#server/modules/authorization/authorization'
-import { Permission } from '#server/modules/authorization/permissions'
+import { Permissions } from '#server/modules/authorization/permissions'
 import { AnonymousUser, type UserContext } from '#server/modules/users/user'
 
 const user: UserContext = {
   id: 'user-id',
   username: 'JohnDoe',
   email: 'john.doe@example.com',
-  permissions: [Permission.READ_USERS, Permission.CREATE_SESSIONS],
+  permissions: [Permissions.READ_USERS, Permissions.CREATE_SESSIONS],
   isAnonymous: false,
 }
 
@@ -23,11 +23,11 @@ describe('authorization', () => {
 
   describe('hasPermission()', () => {
     it('returns true when the user owns the permission', () => {
-      expect(hasPermission(user, Permission.READ_USERS)).toBe(true)
+      expect(hasPermission(user, Permissions.READ_USERS)).toBe(true)
     })
 
     it('returns false when the user does not own the permission', () => {
-      expect(hasPermission(user, Permission.UPDATE_USERS)).toBe(false)
+      expect(hasPermission(user, Permissions.UPDATE_USERS)).toBe(false)
     })
   })
 
@@ -37,37 +37,37 @@ describe('authorization', () => {
     })
 
     it('requires every permission in "all" mode', () => {
-      expect(hasPermissions(user, [Permission.READ_USERS, Permission.CREATE_SESSIONS])).toBe(true)
-      expect(hasPermissions(user, [Permission.READ_USERS, Permission.UPDATE_USERS])).toBe(false)
+      expect(hasPermissions(user, [Permissions.READ_USERS, Permissions.CREATE_SESSIONS])).toBe(true)
+      expect(hasPermissions(user, [Permissions.READ_USERS, Permissions.UPDATE_USERS])).toBe(false)
     })
 
     it('accepts at least one permission in "any" mode', () => {
-      expect(hasPermissions(user, [Permission.READ_USERS, Permission.UPDATE_USERS], 'any')).toBe(
+      expect(hasPermissions(user, [Permissions.READ_USERS, Permissions.UPDATE_USERS], 'any')).toBe(
         true,
       )
       expect(
-        hasPermissions(user, [Permission.READ_ACTIVATION_TOKEN, Permission.UPDATE_USERS], 'any'),
+        hasPermissions(user, [Permissions.READ_ACTIVATION_TOKEN, Permissions.UPDATE_USERS], 'any'),
       ).toBe(false)
     })
   })
 
   describe('authorize()', () => {
     it('returns the user when authorized', () => {
-      const result = authorize(user, [Permission.READ_USERS])
+      const result = authorize(user, [Permissions.READ_USERS])
 
       expect(result.isOk()).toBe(true)
       expect(result._unsafeUnwrap()).toBe(user)
     })
 
     it('rejects anonymous users as unauthorized', () => {
-      const result = authorize(new AnonymousUser(), [Permission.READ_USERS])
+      const result = authorize(new AnonymousUser(), [Permissions.READ_USERS])
 
       expect(result.isErr()).toBe(true)
       expect(result._unsafeUnwrapErr().statusCode).toBe(401)
     })
 
     it('rejects users missing permissions as forbidden and reports them', () => {
-      const result = authorize(user, [Permission.READ_USERS, Permission.UPDATE_USERS])
+      const result = authorize(user, [Permissions.READ_USERS, Permissions.UPDATE_USERS])
 
       expect(result.isErr()).toBe(true)
 
@@ -76,7 +76,7 @@ describe('authorization', () => {
       expect(error.statusCode).toBe(403)
       expect(error.data).toEqual({
         code: 'ACCESS_DENIED',
-        missing: [Permission.UPDATE_USERS],
+        missing: [Permissions.UPDATE_USERS],
       })
     })
   })

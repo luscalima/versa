@@ -9,7 +9,7 @@ import {
   userRepository,
 } from '#test/helpers'
 import { NativeHasherAdapter } from '#server/infra/adapters/nativeHasherAdapter'
-import { Permission } from '#server/modules/authorization/permissions'
+import { Permissions } from '#server/modules/authorization/permissions'
 
 describe('PATCH /v1/users/:username', async () => {
   beforeEach(async () => {
@@ -62,7 +62,7 @@ describe('PATCH /v1/users/:username', async () => {
       })
 
       it('Updates the "permissions" only', async () => {
-        const newPermissions = [Permission.READ_USERS, Permission.CREATE_SESSIONS]
+        const newPermissions = [Permissions.READ_USERS, Permissions.CREATE_SESSIONS]
         const response = await updateUser(staticMocks.user.username, {
           permissions: newPermissions,
         })
@@ -83,7 +83,7 @@ describe('PATCH /v1/users/:username', async () => {
       })
 
       it('Keeps the existing "permissions" when not provided', async () => {
-        const permissions = [Permission.READ_USERS]
+        const permissions = [Permissions.READ_USERS]
         await dynamicMocks.createUser({ permissions }, { merge: true, rebuild: true })
 
         const response = await updateUser(staticMocks.user.username, { username: 'JaneDoe' })
@@ -96,7 +96,7 @@ describe('PATCH /v1/users/:username', async () => {
       })
 
       it('Clears the "permissions" when an empty array is provided', async () => {
-        await updateUser(staticMocks.user.username, { permissions: [Permission.READ_USERS] })
+        await updateUser(staticMocks.user.username, { permissions: [Permissions.READ_USERS] })
 
         const response = await updateUser(staticMocks.user.username, { permissions: [] })
 
@@ -139,7 +139,7 @@ describe('PATCH /v1/users/:username', async () => {
         const newPayload = {
           username: 'JaneDoe',
           email: 'jane.doe@example.com',
-          permissions: [Permission.READ_USERS, Permission.UPDATE_USERS],
+          permissions: [Permissions.READ_USERS, Permissions.UPDATE_USERS],
         }
         const response = await updateUser(staticMocks.user.username, newPayload)
 
@@ -264,7 +264,7 @@ describe('PATCH /v1/users/:username', async () => {
 
       it('Returns bad request when "permissions" is not an array', async () => {
         const response = await updateUser(staticMocks.user.username, {
-          permissions: Permission.READ_USERS,
+          permissions: Permissions.READ_USERS,
         })
 
         expect(response.status).toBe(400)
@@ -272,7 +272,7 @@ describe('PATCH /v1/users/:username', async () => {
 
       it('Returns bad request when "permissions" contains non-string items', async () => {
         const response = await updateUser(staticMocks.user.username, {
-          permissions: [Permission.READ_USERS, 1],
+          permissions: [Permissions.READ_USERS, 1],
         })
 
         expect(response.status).toBe(400)

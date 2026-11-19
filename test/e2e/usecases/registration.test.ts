@@ -2,7 +2,7 @@ import { fetch } from 'ofetch'
 import setCookieParser from 'set-cookie-parser'
 import { version as uuidVersion } from 'uuid'
 import { SessionService } from '#server/modules/sessions/sessionService'
-import { Permission } from '#server/modules/authorization/permissions'
+import { Permissions } from '#server/modules/authorization/permissions'
 import {
   api,
   appUrl,
@@ -114,7 +114,7 @@ describe('Account registration and activation flow', () => {
         id: data.id,
         username: USER_PAYLOAD.username,
         email: USER_PAYLOAD.email,
-        permissions: [Permission.READ_ACTIVATION_TOKEN],
+        permissions: [Permissions.READ_ACTIVATION_TOKEN],
         createdAt: data.createdAt,
         updatedAt: data.updatedAt,
       })
@@ -195,9 +195,9 @@ describe('Account registration and activation flow', () => {
       const repository = await userRepository()
       const activatedUser = await repository.findByUsername(USER_PAYLOAD.username)
       expect(activatedUser?.permissions).toEqual([
-        Permission.CREATE_SESSIONS,
-        Permission.READ_SESSIONS,
-        Permission.UPDATE_USERS,
+        Permissions.CREATE_SESSIONS,
+        Permissions.READ_SESSIONS,
+        Permissions.UPDATE_USERS,
       ])
     })
 
@@ -333,9 +333,9 @@ describe('Account registration and activation flow', () => {
         username: USER_PAYLOAD.username,
         email: USER_PAYLOAD.email,
         permissions: [
-          Permission.CREATE_SESSIONS,
-          Permission.READ_SESSIONS,
-          Permission.UPDATE_USERS,
+          Permissions.CREATE_SESSIONS,
+          Permissions.READ_SESSIONS,
+          Permissions.UPDATE_USERS,
         ],
         createdAt: expect.any(String),
         updatedAt: expect.any(String),

@@ -1,12 +1,12 @@
 import { err, ok, type Result } from 'neverthrow'
-import { isPermission, Permission } from '../authorization/permissions'
+import { isPermission, Permissions } from '../authorization/permissions'
 
 export interface UserProps {
   readonly id: string
   readonly username: string
   readonly email: string
   readonly password: string
-  readonly permissions: Permission[]
+  readonly permissions: Permissions[]
   readonly createdAt?: Date
   readonly updatedAt?: Date
 }
@@ -77,7 +77,7 @@ export class User implements UserContext {
     return this.props.password
   }
 
-  get permissions(): Permission[] {
+  get permissions(): Permissions[] {
     return this.props.permissions
   }
 
@@ -105,6 +105,6 @@ export class AnonymousUser implements UserContext {
   readonly id = ANONYMOUS_USER_ID
   readonly username = ANONYMOUS_USER_ID
   readonly email = ''
-  readonly permissions: Permission[] = [Permission.CREATE_SESSIONS]
+  readonly permissions: Permissions[] = [Permissions.CREATE_SESSIONS]
   readonly isAnonymous = true
 }
