@@ -3,11 +3,13 @@ import {
   api,
   clearDatabase,
   destroyDatabase,
+  getDatabase,
   restoreDatabase,
   dynamicMocks,
   staticMocks,
 } from '#test/helpers'
 import type { UserProps } from '#server/modules/users/user'
+import { Permission } from '#server/modules/authorization/permissions'
 import { SessionService } from '#server/modules/sessions/sessionService'
 import { version as uuidVersion } from 'uuid'
 import setCookieParser from 'set-cookie-parser'
@@ -16,7 +18,10 @@ describe('POST /v1/sessions', async () => {
   let user: UserProps
 
   beforeEach(async () => {
-    user = await dynamicMocks.createUser(null, { rebuild: true })
+    user = await dynamicMocks.createUser(
+      { permissions: [Permission.CREATE_SESSIONS] },
+      { merge: true, rebuild: true },
+    )
   })
 
   afterAll(async () => {
@@ -155,6 +160,37 @@ describe('POST /v1/sessions', async () => {
 
         await restoreDatabase()
       })
+    })
+  })
+
+  describe('User without the required permission', () => {
+    it('does not create or persist a session', async () => {
+      const unauthorizedUser = await dynamicMocks.createUser({
+        username: 'JaneDoe',
+        email: 'jane.doe@example.com',
+        password: 'Password123!',
+        permissions: [Permission.READ_USERS],
+      })
+
+      const response = await requestSessionCreation({
+        email: unauthorizedUser.email,
+        password: 'Password123!',
+      })
+
+      expect(response.status).toBe(403)
+      expect(await response.json()).toEqual({
+        statusCode: 403,
+        message: 'You do not have permission to perform this action',
+        data: {
+          code: 'ACCESS_DENIED',
+          missing: [Permission.CREATE_SESSIONS],
+        },
+      })
+
+      const db = await getDatabase()
+      const sessions = await db('sessions').where({ userId: unauthorizedUser.id })
+
+      expect(sessions).toHaveLength(0)
     })
   })
 })

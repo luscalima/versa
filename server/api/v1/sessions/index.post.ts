@@ -4,6 +4,8 @@ import { NativeHasherAdapter } from '~~/server/infra/adapters/nativeHasherAdapte
 import { SessionService } from '~~/server/modules/sessions/sessionService'
 import { KnexSessionRepository } from '~~/server/infra/repositories/knexSessionRepository'
 import { NativeGeneratorAdapter } from '~~/server/infra/adapters/nativeGeneratorAdapter'
+import { authorize } from '~~/server/modules/authorization/authorization'
+import { Permission } from '~~/server/modules/authorization/permissions'
 import { z } from 'zod'
 
 export const sessionSchema = z.object({
@@ -11,7 +13,7 @@ export const sessionSchema = z.object({
   password: z.string().nonempty().trim().min(8),
 })
 
-export default defineRouteHandler(async event => {
+export default defineRouteHandler(requirePermissions([Permission.CREATE_SESSIONS]), async event => {
   const payload = await useValidateBody(
     event,
     sessionSchema,
@@ -31,6 +33,12 @@ export default defineRouteHandler(async event => {
 
   if (authResult.isErr()) {
     return authResult.error
+  }
+
+  const authorizationResult = authorize(authResult.value, [Permission.CREATE_SESSIONS])
+
+  if (authorizationResult.isErr()) {
+    return authorizationResult.error
   }
 
   const sessionResult = await sessionService.create(authResult.value.id)

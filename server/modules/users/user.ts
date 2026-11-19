@@ -1,6 +1,5 @@
 import { err, ok, type Result } from 'neverthrow'
-import { isPermission } from '../authorization/permissions'
-import type { Permission } from '../authorization/permissions'
+import { isPermission, Permission } from '../authorization/permissions'
 
 export interface UserProps {
   readonly id: string
@@ -106,6 +105,6 @@ export class AnonymousUser implements UserContext {
   readonly id = ANONYMOUS_USER_ID
   readonly username = ANONYMOUS_USER_ID
   readonly email = ''
-  readonly permissions: Permission[] = []
+  readonly permissions: Permission[] = [Permission.CREATE_SESSIONS]
   readonly isAnonymous = true
 }
