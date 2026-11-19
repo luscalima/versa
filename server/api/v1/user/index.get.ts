@@ -2,11 +2,12 @@ import { NativeGeneratorAdapter } from '~~/server/infra/adapters/nativeGenerator
 import { NativeHasherAdapter } from '~~/server/infra/adapters/nativeHasherAdapter'
 import { KnexSessionRepository } from '~~/server/infra/repositories/knexSessionRepository'
 import { KnexUserRepository } from '~~/server/infra/repositories/knexUserRepository'
+import { Permissions } from '~~/server/modules/authorization/permissions'
 import { SessionService } from '~~/server/modules/sessions/sessionService'
 import { UserService } from '~~/server/modules/users/userService'
 import { unauthorizedError } from '~~/server/utils/errors'
 
-export default defineRouteHandler(async event => {
+export default defineRouteHandler(requirePermissions([Permissions.READ_SESSIONS]), async event => {
   const sessionId = getCookie(event, 'session_id')
 
   if (!sessionId) {

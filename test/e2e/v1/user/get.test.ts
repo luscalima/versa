@@ -8,19 +8,64 @@ import setCookieParser from 'set-cookie-parser'
 import type { Permissions } from '#server/modules/authorization/permissions'
 import { Permissions as PermissionValue } from '#server/modules/authorization/permissions'
 
+type SeededUser = UserProps & { permissions: Permissions[] }
+
 describe('GET /v1/user', async () => {
-  let createdUser: UserProps & { permissions: Permissions[] }
+  let createdUser: SeededUser
   let createdSession: SessionProps
+  let userWithoutSessionRead: SeededUser
+  let sessionWithoutSessionRead: SessionProps
+  let inactiveUser: SeededUser
+  let inactiveSession: SessionProps
+
+  function requestWithSession(token: string) {
+    return fetch(api('/v1/user'), {
+      headers: { Cookie: `session_id=${token}` },
+    })
+  }
 
   beforeAll(async () => {
     vi.useFakeTimers({
       now: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
     })
+
     createdUser = await dynamicMocks.createUser(
-      { permissions: [PermissionValue.READ_USERS, PermissionValue.CREATE_SESSIONS] },
+      {
+        permissions: [
+          PermissionValue.CREATE_SESSIONS,
+          PermissionValue.READ_SESSIONS,
+          PermissionValue.UPDATE_USERS,
+        ],
+      },
       { merge: true, rebuild: true },
     )
     createdSession = await dynamicMocks.createSession({ userId: createdUser.id }, { merge: true })
+
+    userWithoutSessionRead = await dynamicMocks.createUser(
+      {
+        username: 'NoSessionRead',
+        email: 'no.session.read@example.com',
+        permissions: [PermissionValue.READ_USERS, PermissionValue.CREATE_SESSIONS],
+      },
+      { merge: true },
+    )
+    sessionWithoutSessionRead = await dynamicMocks.createSession(
+      { userId: userWithoutSessionRead.id, token: 'c'.repeat(96) },
+      { merge: true },
+    )
+
+    inactiveUser = await dynamicMocks.createUser(
+      {
+        username: 'InactiveUser',
+        email: 'inactive.user@example.com',
+        permissions: [PermissionValue.READ_ACTIVATION_TOKEN],
+      },
+      { merge: true },
+    )
+    inactiveSession = await dynamicMocks.createSession(
+      { userId: inactiveUser.id, token: 'd'.repeat(96) },
+      { merge: true },
+    )
   })
 
   afterAll(async () => {
@@ -29,11 +74,7 @@ describe('GET /v1/user', async () => {
 
   describe('Default user', () => {
     it('With valid session', async () => {
-      const response = await fetch(api('/v1/user'), {
-        headers: {
-          Cookie: `session_id=${createdSession.token}`,
-        },
-      })
+      const response = await requestWithSession(createdSession.token)
 
       expect(response.status).toBe(200)
 
@@ -43,7 +84,11 @@ describe('GET /v1/user', async () => {
         id: createdUser.id,
         username: createdUser.username,
         email: createdUser.email,
-        permissions: createdUser.permissions,
+        permissions: [
+          PermissionValue.CREATE_SESSIONS,
+          PermissionValue.READ_SESSIONS,
+          PermissionValue.UPDATE_USERS,
+        ],
         createdAt: createdUser.createdAt?.toISOString(),
         updatedAt: createdUser.updatedAt?.toISOString(),
       })
@@ -71,6 +116,31 @@ describe('GET /v1/user', async () => {
     })
   })
 
+  describe('Authenticated user without "READ_SESSIONS"', () => {
+    const forbiddenBody = {
+      statusCode: 403,
+      message: 'You do not have permission to perform this action',
+      data: {
+        code: 'ACCESS_DENIED',
+        missing: [PermissionValue.READ_SESSIONS],
+      },
+    }
+
+    it('Rejects a user whose permissions do not include "READ_SESSIONS"', async () => {
+      const response = await requestWithSession(sessionWithoutSessionRead.token)
+
+      expect(response.status).toBe(403)
+      expect(await response.json()).toEqual(forbiddenBody)
+    })
+
+    it('Rejects an inactive user that still holds "READ_ACTIVATION_TOKEN"', async () => {
+      const response = await requestWithSession(inactiveSession.token)
+
+      expect(response.status).toBe(403)
+      expect(await response.json()).toEqual(forbiddenBody)
+    })
+  })
+
   describe('Anonymous user', () => {
     it('Without "session_id" cookie', async () => {
       const response = await fetch(api('/v1/user'))
@@ -89,11 +159,7 @@ describe('GET /v1/user', async () => {
     })
 
     it('With unknown "session_id" token', async () => {
-      const response = await fetch(api('/v1/user'), {
-        headers: {
-          Cookie: `session_id=${'a'.repeat(96)}`,
-        },
-      })
+      const response = await requestWithSession('a'.repeat(96))
 
       expect(response.status).toBe(401)
 
@@ -121,11 +187,7 @@ describe('GET /v1/user', async () => {
         { merge: true },
       )
 
-      const response = await fetch(api('/v1/user'), {
-        headers: {
-          Cookie: `session_id=${expiredSession.token}`,
-        },
-      })
+      const response = await requestWithSession(expiredSession.token)
 
       expect(response.status).toBe(401)
 
