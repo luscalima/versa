@@ -5,11 +5,11 @@ import { version as uuidVersion } from 'uuid'
 import type { SessionProps } from '#server/modules/sessions/session'
 import { SessionService } from '#server/modules/sessions/sessionService'
 import setCookieParser from 'set-cookie-parser'
-import type { Resource } from '#server/modules/authorization/resources'
-import { Resource as ResourceValue } from '#server/modules/authorization/resources'
+import type { Permission } from '#server/modules/authorization/permissions'
+import { Permission as PermissionValue } from '#server/modules/authorization/permissions'
 
 describe('GET /v1/user', async () => {
-  let createdUser: UserProps & { resources: Resource[] }
+  let createdUser: UserProps & { permissions: Permission[] }
   let createdSession: SessionProps
 
   beforeAll(async () => {
@@ -17,7 +17,7 @@ describe('GET /v1/user', async () => {
       now: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
     })
     createdUser = await dynamicMocks.createUser(
-      { resources: [ResourceValue.READ_USERS, ResourceValue.CREATE_SESSIONS] },
+      { permissions: [PermissionValue.READ_USERS, PermissionValue.CREATE_SESSIONS] },
       { merge: true, rebuild: true },
     )
     createdSession = await dynamicMocks.createSession({ userId: createdUser.id }, { merge: true })
@@ -43,7 +43,7 @@ describe('GET /v1/user', async () => {
         id: createdUser.id,
         username: createdUser.username,
         email: createdUser.email,
-        resources: createdUser.resources,
+        permissions: createdUser.permissions,
         createdAt: createdUser.createdAt?.toISOString(),
         updatedAt: createdUser.updatedAt?.toISOString(),
       })

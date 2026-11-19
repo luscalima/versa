@@ -4,7 +4,7 @@ import { faker } from '@faker-js/faker'
 import bcrypt from 'bcrypt'
 import type { SessionProps } from '#server/modules/sessions/session'
 import { SessionService } from '#server/modules/sessions/sessionService'
-import type { Resource } from '#server/modules/authorization/resources'
+import type { Permission } from '#server/modules/authorization/permissions'
 
 type DynamicActions = Partial<{
   rebuild: boolean
@@ -12,9 +12,9 @@ type DynamicActions = Partial<{
   unique: boolean
 }>
 
-type UserSeed = Partial<CreateUserProps> & Partial<{ resources: Resource[] }>
+type UserSeed = Partial<CreateUserProps> & Partial<{ permissions: Permission[] }>
 
-type SeededUser = UserProps & { resources: Resource[] }
+type SeededUser = UserProps & { permissions: Permission[] }
 
 async function createUser(
   payload?: UserSeed | null,
@@ -87,7 +87,7 @@ export const staticMocks = {
     username: 'JohnDoe',
     email: 'john.doe@example.com',
     password: 'Password123!',
-    resources: [] as Resource[],
+    permissions: [] as Permission[],
   },
   session: {
     token:

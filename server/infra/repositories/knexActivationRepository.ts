@@ -1,7 +1,7 @@
 import type { Knex } from 'knex'
 import { ActivationToken } from '~~/server/modules/activation/activationToken'
 import type { ActivationRepository } from '~~/server/modules/activation/activationRepository'
-import type { Resource } from '~~/server/modules/authorization/resources'
+import type { Permission } from '~~/server/modules/authorization/permissions'
 import type { User } from '~~/server/modules/users/user'
 
 export class KnexActivationRepository implements ActivationRepository {
@@ -35,7 +35,7 @@ export class KnexActivationRepository implements ActivationRepository {
     return ActivationToken.fromPersistence(token)
   }
 
-  async activate(id: string, resources: Resource[]): Promise<ActivationToken | null> {
+  async activate(id: string, permissions: Permission[]): Promise<ActivationToken | null> {
     return this.db.transaction(async trx => {
       const now = trx.fn.now()
 
@@ -50,7 +50,7 @@ export class KnexActivationRepository implements ActivationRepository {
         return null
       }
 
-      await trx(this.usersTable).where({ id: token.userId }).update({ resources, updatedAt: now })
+      await trx(this.usersTable).where({ id: token.userId }).update({ permissions, updatedAt: now })
 
       return ActivationToken.fromPersistence(token)
     })

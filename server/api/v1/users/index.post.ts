@@ -6,13 +6,13 @@ import { NativeHasherAdapter } from '~~/server/infra/adapters/nativeHasherAdapte
 import { ActivationService } from '~~/server/modules/activation/activationService'
 import { NodemailerMailAdapter } from '~~/server/infra/adapters/nodemailerMailAdapter'
 import { KnexActivationRepository } from '~~/server/infra/repositories/knexActivationRepository'
-import { Resource } from '~~/server/modules/authorization/resources'
+import { Permission } from '~~/server/modules/authorization/permissions'
 
 export const userSchema = z.object({
   username: z.string().nonempty().trim(),
   email: z.string().email().trim(),
   password: z.string().nonempty().trim().min(8),
-  resources: z.array(z.nativeEnum(Resource)).optional(),
+  permissions: z.array(z.nativeEnum(Permission)).optional(),
 })
 
 export default defineRouteHandler(async event => {

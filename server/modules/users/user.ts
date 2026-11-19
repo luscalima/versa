@@ -1,18 +1,18 @@
 import { err, ok, type Result } from 'neverthrow'
-import { isResource } from '../authorization/resources'
-import type { Resource } from '../authorization/resources'
+import { isPermission } from '../authorization/permissions'
+import type { Permission } from '../authorization/permissions'
 
 export interface UserProps {
   readonly id: string
   readonly username: string
   readonly email: string
   readonly password: string
-  readonly resources: Resource[]
+  readonly permissions: Permission[]
   readonly createdAt?: Date
   readonly updatedAt?: Date
 }
 
-export type CreateUserProps = Pick<UserProps, 'username' | 'email' | 'password' | 'resources'>
+export type CreateUserProps = Pick<UserProps, 'username' | 'email' | 'password' | 'permissions'>
 
 export type UserDTO = Omit<UserProps, 'password'>
 
@@ -46,7 +46,7 @@ export class User implements UserContext {
       id: crypto.randomUUID(),
       username: props.username,
       password: props.password,
-      resources: props.resources,
+      permissions: props.permissions,
       email: props.email.toLowerCase(),
     })
 
@@ -56,7 +56,7 @@ export class User implements UserContext {
   static fromPersistence(props: UserProps): User {
     const user = new User({
       ...props,
-      resources: props.resources.filter(isResource),
+      permissions: props.permissions.filter(isPermission),
     })
 
     return user
@@ -78,8 +78,8 @@ export class User implements UserContext {
     return this.props.password
   }
 
-  get resources(): Resource[] {
-    return this.props.resources
+  get permissions(): Permission[] {
+    return this.props.permissions
   }
 
   get createdAt(): Date | undefined {
@@ -94,7 +94,7 @@ export class User implements UserContext {
     return {
       id: this.id,
       username: this.username,
-      resources: this.resources,
+      permissions: this.permissions,
       email: this.email,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
@@ -106,6 +106,6 @@ export class AnonymousUser implements UserContext {
   readonly id = ANONYMOUS_USER_ID
   readonly username = ANONYMOUS_USER_ID
   readonly email = ''
-  readonly resources: Resource[] = []
+  readonly permissions: Permission[] = []
   readonly isAnonymous = true
 }

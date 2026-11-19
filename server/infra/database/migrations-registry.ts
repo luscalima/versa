@@ -2,6 +2,7 @@ import * as m0 from './migrations/20260807151954_create_users'
 import * as m1 from './migrations/20260911022644_create_sessions'
 import * as m2 from './migrations/20261021233221_alter_user_add_resources'
 import * as m3 from './migrations/20261107174643_create_user_activation_tokens'
+import * as m4 from './migrations/20261118230000_rename_user_permissions'
 
 export const migrations = [
   {
@@ -19,5 +20,9 @@ export const migrations = [
   {
     name: '20261107174643_create_user_activation_tokens.ts',
     module: m3,
+  },
+  {
+    name: '20261118230000_rename_user_permissions.ts',
+    module: m4,
   }
 ]

@@ -9,7 +9,7 @@ import {
   userRepository,
 } from '#test/helpers'
 import { NativeHasherAdapter } from '#server/infra/adapters/nativeHasherAdapter'
-import { Resource } from '#server/modules/authorization/resources'
+import { Permission } from '#server/modules/authorization/permissions'
 
 describe('PATCH /v1/users/:username', async () => {
   beforeEach(async () => {
@@ -61,15 +61,17 @@ describe('PATCH /v1/users/:username', async () => {
         expect(data).not.toHaveProperty('password')
       })
 
-      it('Updates the "resources" only', async () => {
-        const newResources = [Resource.READ_USERS, Resource.CREATE_SESSIONS]
-        const response = await updateUser(staticMocks.user.username, { resources: newResources })
+      it('Updates the "permissions" only', async () => {
+        const newPermissions = [Permission.READ_USERS, Permission.CREATE_SESSIONS]
+        const response = await updateUser(staticMocks.user.username, {
+          permissions: newPermissions,
+        })
 
         expect(response.status).toBe(200)
 
         const data = await response.json()
 
-        expect(data.resources).toEqual(newResources)
+        expect(data.permissions).toEqual(newPermissions)
         expect(data.username).toBe(staticMocks.user.username)
         expect(data.email).toBe(staticMocks.user.email)
         expect(data).not.toHaveProperty('password')
@@ -77,12 +79,12 @@ describe('PATCH /v1/users/:username', async () => {
         const repository = await userRepository()
         const user = await repository.findByUsername(staticMocks.user.username)
 
-        expect(user!.toDTO()).toMatchObject({ resources: newResources })
+        expect(user!.toDTO()).toMatchObject({ permissions: newPermissions })
       })
 
-      it('Keeps the existing "resources" when not provided', async () => {
-        const resources = [Resource.READ_USERS]
-        await dynamicMocks.createUser({ resources }, { merge: true, rebuild: true })
+      it('Keeps the existing "permissions" when not provided', async () => {
+        const permissions = [Permission.READ_USERS]
+        await dynamicMocks.createUser({ permissions }, { merge: true, rebuild: true })
 
         const response = await updateUser(staticMocks.user.username, { username: 'JaneDoe' })
 
@@ -90,24 +92,24 @@ describe('PATCH /v1/users/:username', async () => {
 
         const data = await response.json()
 
-        expect(data.resources).toEqual(resources)
+        expect(data.permissions).toEqual(permissions)
       })
 
-      it('Clears the "resources" when an empty array is provided', async () => {
-        await updateUser(staticMocks.user.username, { resources: [Resource.READ_USERS] })
+      it('Clears the "permissions" when an empty array is provided', async () => {
+        await updateUser(staticMocks.user.username, { permissions: [Permission.READ_USERS] })
 
-        const response = await updateUser(staticMocks.user.username, { resources: [] })
+        const response = await updateUser(staticMocks.user.username, { permissions: [] })
 
         expect(response.status).toBe(200)
 
         const data = await response.json()
 
-        expect(data.resources).toEqual([])
+        expect(data.permissions).toEqual([])
 
         const repository = await userRepository()
         const user = await repository.findByUsername(staticMocks.user.username)
 
-        expect(user!.toDTO()).toMatchObject({ resources: [] })
+        expect(user!.toDTO()).toMatchObject({ permissions: [] })
       })
 
       it('Updates the "password", hashing it on persistence', async () => {
@@ -137,7 +139,7 @@ describe('PATCH /v1/users/:username', async () => {
         const newPayload = {
           username: 'JaneDoe',
           email: 'jane.doe@example.com',
-          resources: [Resource.READ_USERS, Resource.UPDATE_USERS],
+          permissions: [Permission.READ_USERS, Permission.UPDATE_USERS],
         }
         const response = await updateUser(staticMocks.user.username, newPayload)
 
@@ -147,7 +149,7 @@ describe('PATCH /v1/users/:username', async () => {
 
         expect(data.username).toBe(newPayload.username)
         expect(data.email).toBe(newPayload.email)
-        expect(data.resources).toEqual(newPayload.resources)
+        expect(data.permissions).toEqual(newPayload.permissions)
         expect(data).not.toHaveProperty('password')
       })
 
@@ -260,17 +262,17 @@ describe('PATCH /v1/users/:username', async () => {
         expect(response.status).toBe(400)
       })
 
-      it('Returns bad request when "resources" is not an array', async () => {
+      it('Returns bad request when "permissions" is not an array', async () => {
         const response = await updateUser(staticMocks.user.username, {
-          resources: Resource.READ_USERS,
+          permissions: Permission.READ_USERS,
         })
 
         expect(response.status).toBe(400)
       })
 
-      it('Returns bad request when "resources" contains non-string items', async () => {
+      it('Returns bad request when "permissions" contains non-string items', async () => {
         const response = await updateUser(staticMocks.user.username, {
-          resources: [Resource.READ_USERS, 1],
+          permissions: [Permission.READ_USERS, 1],
         })
 
         expect(response.status).toBe(400)

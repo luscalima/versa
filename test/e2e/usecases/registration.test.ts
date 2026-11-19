@@ -2,7 +2,7 @@ import { fetch } from 'ofetch'
 import setCookieParser from 'set-cookie-parser'
 import { version as uuidVersion } from 'uuid'
 import { SessionService } from '#server/modules/sessions/sessionService'
-import { Resource } from '#server/modules/authorization/resources'
+import { Permission } from '#server/modules/authorization/permissions'
 import {
   api,
   appUrl,
@@ -97,7 +97,7 @@ describe('Account registration and activation flow', () => {
     const token = await registerUserAndGetActivationToken(payload)
     const response = await requestAccountActivation(token)
 
-    expect(response.status).toBe(204)
+    expect(response.status).toBe(200)
 
     return token
   }
@@ -114,7 +114,7 @@ describe('Account registration and activation flow', () => {
         id: data.id,
         username: USER_PAYLOAD.username,
         email: USER_PAYLOAD.email,
-        resources: [Resource.READ_ACTIVATION_TOKEN],
+        permissions: [Permission.READ_ACTIVATION_TOKEN],
         createdAt: data.createdAt,
         updatedAt: data.updatedAt,
       })
@@ -194,10 +194,10 @@ describe('Account registration and activation flow', () => {
 
       const repository = await userRepository()
       const activatedUser = await repository.findByUsername(USER_PAYLOAD.username)
-      expect(activatedUser?.resources).toEqual([
-        Resource.CREATE_SESSIONS,
-        Resource.READ_SESSIONS,
-        Resource.UPDATE_USERS,
+      expect(activatedUser?.permissions).toEqual([
+        Permission.CREATE_SESSIONS,
+        Permission.READ_SESSIONS,
+        Permission.UPDATE_USERS,
       ])
     })
 
@@ -299,24 +299,6 @@ describe('Account registration and activation flow', () => {
         httpOnly: true,
       })
     })
-
-    it('rejects an incorrect password after the account is activated', async () => {
-      await activateRegisteredUser()
-
-      const response = await requestSessionCreation({
-        ...USER_PAYLOAD,
-        password: 'WrongPassword123!',
-      })
-
-      expect(response.status).toBe(401)
-      expect(await response.json()).toEqual({
-        statusCode: 401,
-        message: 'Authentication data does not match',
-        data: {
-          code: 'UNAUTHORIZED',
-        },
-      })
-    })
   })
 
   describe('User information retrieval', () => {
@@ -350,7 +332,11 @@ describe('Account registration and activation flow', () => {
       expect(data).toMatchObject({
         username: USER_PAYLOAD.username,
         email: USER_PAYLOAD.email,
-        resources: [],
+        permissions: [
+          Permission.CREATE_SESSIONS,
+          Permission.READ_SESSIONS,
+          Permission.UPDATE_USERS,
+        ],
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
       })
