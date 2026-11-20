@@ -192,22 +192,11 @@ describe('POST /v1/users', async () => {
     }
 
     it('Rejects an activated user without "CREATE_USER" permission', async () => {
-      const requester = await dynamicMocks.createUser(
-        {
-          username: 'ActivatedRequester',
-          email: 'activated.requester@example.com',
-          permissions: [
-            Permissions.CREATE_SESSION,
-            Permissions.READ_SESSION,
-            Permissions.UPDATE_USER,
-          ],
-        },
-        { merge: true },
-      )
-      const session = await dynamicMocks.createSession(
-        { userId: requester.id, token: 'a'.repeat(96) },
-        { merge: true },
-      )
+      const { session } = await dynamicMocks.createActivatedUserWithSession({
+        username: 'ActivatedRequester',
+        email: 'activated.requester@example.com',
+        token: 'a'.repeat(96),
+      })
 
       const response = await requestUserCreationWithSession(session.token, userPayload)
 

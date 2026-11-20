@@ -2,17 +2,16 @@ import { KnexUserRepository } from '~~/server/infra/repositories/knexUserReposit
 import { useValidateBody } from '~~/server/utils/useValidateBody'
 import { UserService } from '~~/server/modules/users/userService'
 import { NativeHasherAdapter } from '~~/server/infra/adapters/nativeHasherAdapter'
-import { z } from 'zod'
 import { Permissions } from '~~/server/modules/authorization/permissions'
+import { z } from 'zod'
 
 export const userSchema = z.object({
   username: z.string().trim().nonempty().optional(),
   email: z.string().trim().email().optional(),
   password: z.string().trim().nonempty().min(8).optional(),
-  permissions: z.array(z.nativeEnum(Permissions)).optional(),
 })
 
-export default defineRouteHandler(async event => {
+export default defineRouteHandler(requirePermissions([Permissions.READ_USER]), async event => {
   const username = getRouterParam(event, 'username')!
   const repository = new KnexUserRepository(useDatabase())
   const hasher = new NativeHasherAdapter()

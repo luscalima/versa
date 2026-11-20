@@ -6,7 +6,7 @@ import type { SessionProps } from '#server/modules/sessions/session'
 import { SessionService } from '#server/modules/sessions/sessionService'
 import type { ActivationTokenProps } from '#server/modules/activation/activationToken'
 import { ActivationService } from '#server/modules/activation/activationService'
-import type { Permissions } from '#server/modules/authorization/permissions'
+import { Permissions } from '#server/modules/authorization/permissions'
 
 type DynamicActions = Partial<{
   rebuild: boolean
@@ -17,6 +17,17 @@ type DynamicActions = Partial<{
 type UserSeed = Partial<CreateUserProps> & Partial<{ permissions: Permissions[] }>
 
 type SeededUser = UserProps & { permissions: Permissions[] }
+
+type ActivatedUserSeed = Omit<UserSeed, 'permissions'> & {
+  token?: string
+  extraPermissions?: Permissions[]
+}
+
+const ACTIVATED_PERMISSIONS: Permissions[] = [
+  Permissions.CREATE_SESSION,
+  Permissions.READ_SESSION,
+  Permissions.UPDATE_USER,
+]
 
 async function createUser(
   payload?: UserSeed | null,
@@ -94,10 +105,27 @@ async function getSession(token = staticMocks.session.token): Promise<SessionPro
   return db(table).where({ token }).first()
 }
 
+async function createActivatedUserWithSession(
+  payload?: ActivatedUserSeed,
+): Promise<{ user: SeededUser; session: SessionProps }> {
+  const { token, extraPermissions, ...userSeed } = payload ?? {}
+  const user = await createUser(
+    { ...userSeed, permissions: [...ACTIVATED_PERMISSIONS, ...(extraPermissions ?? [])] },
+    { merge: true },
+  )
+  const session = await createSession(
+    { userId: user.id, ...(token ? { token } : {}) },
+    { merge: true },
+  )
+
+  return { user, session }
+}
+
 export const dynamicMocks = {
   createUser,
   createSession,
   createActivationToken,
+  createActivatedUserWithSession,
   getSession,
 }
 

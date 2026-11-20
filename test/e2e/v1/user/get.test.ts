@@ -1,5 +1,11 @@
 import { fetch } from 'ofetch'
-import { api, destroyDatabase, dynamicMocks, sessionRepository } from '#test/helpers'
+import {
+  api,
+  destroyDatabase,
+  dynamicMocks,
+  rebuildDatabase,
+  sessionRepository,
+} from '#test/helpers'
 import type { UserProps } from '#server/modules/users/user'
 import { version as uuidVersion } from 'uuid'
 import type { SessionProps } from '#server/modules/sessions/session'
@@ -29,17 +35,12 @@ describe('GET /v1/user', async () => {
       now: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
     })
 
-    createdUser = await dynamicMocks.createUser(
-      {
-        permissions: [
-          PermissionValue.CREATE_SESSION,
-          PermissionValue.READ_SESSION,
-          PermissionValue.UPDATE_USER,
-        ],
-      },
-      { merge: true, rebuild: true },
-    )
-    createdSession = await dynamicMocks.createSession({ userId: createdUser.id }, { merge: true })
+    await rebuildDatabase()
+
+    const activated = await dynamicMocks.createActivatedUserWithSession()
+
+    createdUser = activated.user
+    createdSession = activated.session
 
     userWithoutSessionRead = await dynamicMocks.createUser(
       {

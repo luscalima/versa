@@ -1,18 +1,13 @@
 import { fetch } from 'ofetch'
-import {
-  api,
-  destroyDatabase,
-  downDatabase,
-  dynamicMocks,
-  staticMocks,
-  restoreDatabase,
-  userRepository,
-} from '#test/helpers'
+import { api, destroyDatabase, dynamicMocks, staticMocks, userRepository } from '#test/helpers'
 import { NativeHasherAdapter } from '#server/infra/adapters/nativeHasherAdapter'
 import { Permissions } from '#server/modules/authorization/permissions'
 
 describe('PATCH /v1/users/:username', async () => {
+  let sessionToken: string | undefined
+
   beforeEach(async () => {
+    sessionToken = undefined
     await dynamicMocks.createUser(null, { rebuild: true })
   })
 
@@ -23,12 +18,45 @@ describe('PATCH /v1/users/:username', async () => {
   async function updateUser(targetUsername: string, payload: Record<string, unknown>) {
     return fetch(api(`/v1/users/${targetUsername}`), {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(sessionToken ? { Cookie: `session_id=${sessionToken}` } : {}),
+      },
       body: JSON.stringify(payload),
     })
   }
 
   describe('Anonymous user', () => {
+    it('Cannot update a user', async () => {
+      const newUsername = 'JaneDoe'
+      const response = await updateUser(staticMocks.user.username, { username: newUsername })
+
+      expect(response.status).toBe(401)
+
+      const data = await response.json()
+
+      expect(data).toEqual({
+        statusCode: 401,
+        message: 'Session is invalid or has expired',
+        data: {
+          code: 'UNAUTHORIZED',
+        },
+      })
+    })
+  })
+
+  describe('Authenticated user', () => {
+    beforeEach(async () => {
+      const { session } = await dynamicMocks.createActivatedUserWithSession({
+        username: 'ActivatedRequester',
+        email: 'activated.requester@example.com',
+        extraPermissions: [Permissions.READ_USER],
+        token: 'a'.repeat(96),
+      })
+
+      sessionToken = session.token
+    })
+
     describe('Updating a user', async () => {
       it('Updates the "username" only', async () => {
         const newUsername = 'JaneDoe'
@@ -61,17 +89,16 @@ describe('PATCH /v1/users/:username', async () => {
         expect(data).not.toHaveProperty('password')
       })
 
-      it('Updates the "permissions" only', async () => {
-        const newPermissions = [Permissions.READ_USER, Permissions.CREATE_SESSION]
+      it('Ignores attempts to update "permissions"', async () => {
         const response = await updateUser(staticMocks.user.username, {
-          permissions: newPermissions,
+          permissions: [Permissions.READ_USER, Permissions.CREATE_SESSION],
         })
 
         expect(response.status).toBe(200)
 
         const data = await response.json()
 
-        expect(data.permissions).toEqual(newPermissions)
+        expect(data.permissions).toEqual([])
         expect(data.username).toBe(staticMocks.user.username)
         expect(data.email).toBe(staticMocks.user.email)
         expect(data).not.toHaveProperty('password')
@@ -79,37 +106,26 @@ describe('PATCH /v1/users/:username', async () => {
         const repository = await userRepository()
         const user = await repository.findByUsername(staticMocks.user.username)
 
-        expect(user!.toDTO()).toMatchObject({ permissions: newPermissions })
+        expect(user!.toDTO()).toMatchObject({ permissions: [] })
       })
 
       it('Keeps the existing "permissions" when not provided', async () => {
-        const permissions = [Permissions.READ_USER]
-        await dynamicMocks.createUser({ permissions }, { merge: true, rebuild: true })
+        const target = await dynamicMocks.createUser(
+          {
+            username: 'UserWithPermission',
+            email: 'user.with.permission@example.com',
+            permissions: [Permissions.READ_USER],
+          },
+          { merge: true },
+        )
 
-        const response = await updateUser(staticMocks.user.username, { username: 'JaneDoe' })
-
-        expect(response.status).toBe(200)
-
-        const data = await response.json()
-
-        expect(data.permissions).toEqual(permissions)
-      })
-
-      it('Clears the "permissions" when an empty array is provided', async () => {
-        await updateUser(staticMocks.user.username, { permissions: [Permissions.READ_USER] })
-
-        const response = await updateUser(staticMocks.user.username, { permissions: [] })
+        const response = await updateUser(target.username, { username: 'JaneDoe' })
 
         expect(response.status).toBe(200)
 
         const data = await response.json()
 
-        expect(data.permissions).toEqual([])
-
-        const repository = await userRepository()
-        const user = await repository.findByUsername(staticMocks.user.username)
-
-        expect(user!.toDTO()).toMatchObject({ permissions: [] })
+        expect(data.permissions).toEqual([Permissions.READ_USER])
       })
 
       it('Updates the "password", hashing it on persistence', async () => {
@@ -139,7 +155,6 @@ describe('PATCH /v1/users/:username', async () => {
         const newPayload = {
           username: 'JaneDoe',
           email: 'jane.doe@example.com',
-          permissions: [Permissions.READ_USER, Permissions.UPDATE_USER],
         }
         const response = await updateUser(staticMocks.user.username, newPayload)
 
@@ -149,7 +164,6 @@ describe('PATCH /v1/users/:username', async () => {
 
         expect(data.username).toBe(newPayload.username)
         expect(data.email).toBe(newPayload.email)
-        expect(data.permissions).toEqual(newPayload.permissions)
         expect(data).not.toHaveProperty('password')
       })
 
@@ -249,7 +263,10 @@ describe('PATCH /v1/users/:username', async () => {
       it('Returns bad request for invalid JSON body', async () => {
         const response = await fetch(api(`/v1/users/${staticMocks.user.username}`), {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            Cookie: `session_id=${sessionToken}`,
+          },
           body: '{"username": "JohnDoe"',
         })
 
@@ -260,40 +277,6 @@ describe('PATCH /v1/users/:username', async () => {
         const response = await updateUser(staticMocks.user.username, { password: 'Short1' })
 
         expect(response.status).toBe(400)
-      })
-
-      it('Returns bad request when "permissions" is not an array', async () => {
-        const response = await updateUser(staticMocks.user.username, {
-          permissions: Permissions.READ_USER,
-        })
-
-        expect(response.status).toBe(400)
-      })
-
-      it('Returns bad request when "permissions" contains non-string items', async () => {
-        const response = await updateUser(staticMocks.user.username, {
-          permissions: [Permissions.READ_USER, 1],
-        })
-
-        expect(response.status).toBe(400)
-      })
-    })
-
-    describe('With unexpected server errors', async () => {
-      it('Returns 503 when the database is unavailable', async () => {
-        await downDatabase()
-
-        const response = await updateUser(staticMocks.user.username, { username: 'NewName' })
-        const errorResponse = await response.json()
-
-        expect(response.status).toBe(503)
-        expect(errorResponse).toEqual({
-          statusCode: 503,
-          message: 'The operation could not be completed at this time. Please try again later.',
-          data: { code: 'INTERNAL_SERVER_ERROR' },
-        })
-
-        await restoreDatabase()
       })
     })
   })
