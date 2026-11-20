@@ -19,7 +19,7 @@ describe('POST /v1/sessions', async () => {
 
   beforeEach(async () => {
     user = await dynamicMocks.createUser(
-      { permissions: [Permissions.CREATE_SESSIONS] },
+      { permissions: [Permissions.CREATE_SESSION] },
       { merge: true, rebuild: true },
     )
   })
@@ -169,7 +169,7 @@ describe('POST /v1/sessions', async () => {
         username: 'JaneDoe',
         email: 'jane.doe@example.com',
         password: 'Password123!',
-        permissions: [Permissions.READ_USERS],
+        permissions: [Permissions.READ_USER],
       })
 
       const response = await requestSessionCreation({
@@ -183,7 +183,7 @@ describe('POST /v1/sessions', async () => {
         message: 'You do not have permission to perform this action',
         data: {
           code: 'ACCESS_DENIED',
-          missing: [Permissions.CREATE_SESSIONS],
+          missing: [Permissions.CREATE_SESSION],
         },
       })
 

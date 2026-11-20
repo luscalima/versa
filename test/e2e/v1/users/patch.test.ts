@@ -62,7 +62,7 @@ describe('PATCH /v1/users/:username', async () => {
       })
 
       it('Updates the "permissions" only', async () => {
-        const newPermissions = [Permissions.READ_USERS, Permissions.CREATE_SESSIONS]
+        const newPermissions = [Permissions.READ_USER, Permissions.CREATE_SESSION]
         const response = await updateUser(staticMocks.user.username, {
           permissions: newPermissions,
         })
@@ -83,7 +83,7 @@ describe('PATCH /v1/users/:username', async () => {
       })
 
       it('Keeps the existing "permissions" when not provided', async () => {
-        const permissions = [Permissions.READ_USERS]
+        const permissions = [Permissions.READ_USER]
         await dynamicMocks.createUser({ permissions }, { merge: true, rebuild: true })
 
         const response = await updateUser(staticMocks.user.username, { username: 'JaneDoe' })
@@ -96,7 +96,7 @@ describe('PATCH /v1/users/:username', async () => {
       })
 
       it('Clears the "permissions" when an empty array is provided', async () => {
-        await updateUser(staticMocks.user.username, { permissions: [Permissions.READ_USERS] })
+        await updateUser(staticMocks.user.username, { permissions: [Permissions.READ_USER] })
 
         const response = await updateUser(staticMocks.user.username, { permissions: [] })
 
@@ -139,7 +139,7 @@ describe('PATCH /v1/users/:username', async () => {
         const newPayload = {
           username: 'JaneDoe',
           email: 'jane.doe@example.com',
-          permissions: [Permissions.READ_USERS, Permissions.UPDATE_USERS],
+          permissions: [Permissions.READ_USER, Permissions.UPDATE_USER],
         }
         const response = await updateUser(staticMocks.user.username, newPayload)
 
@@ -264,7 +264,7 @@ describe('PATCH /v1/users/:username', async () => {
 
       it('Returns bad request when "permissions" is not an array', async () => {
         const response = await updateUser(staticMocks.user.username, {
-          permissions: Permissions.READ_USERS,
+          permissions: Permissions.READ_USER,
         })
 
         expect(response.status).toBe(400)
@@ -272,7 +272,7 @@ describe('PATCH /v1/users/:username', async () => {
 
       it('Returns bad request when "permissions" contains non-string items', async () => {
         const response = await updateUser(staticMocks.user.username, {
-          permissions: [Permissions.READ_USERS, 1],
+          permissions: [Permissions.READ_USER, 1],
         })
 
         expect(response.status).toBe(400)

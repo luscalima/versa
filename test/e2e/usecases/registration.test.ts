@@ -195,9 +195,9 @@ describe('Account registration and activation flow', () => {
       const repository = await userRepository()
       const activatedUser = await repository.findByUsername(USER_PAYLOAD.username)
       expect(activatedUser?.permissions).toEqual([
-        Permissions.CREATE_SESSIONS,
-        Permissions.READ_SESSIONS,
-        Permissions.UPDATE_USERS,
+        Permissions.CREATE_SESSION,
+        Permissions.READ_SESSION,
+        Permissions.UPDATE_USER,
       ])
     })
 
@@ -334,9 +334,9 @@ describe('Account registration and activation flow', () => {
         username: USER_PAYLOAD.username,
         email: USER_PAYLOAD.email,
         permissions: [
-          Permissions.CREATE_SESSIONS,
-          Permissions.READ_SESSIONS,
-          Permissions.UPDATE_USERS,
+          Permissions.CREATE_SESSION,
+          Permissions.READ_SESSION,
+          Permissions.UPDATE_USER,
         ],
         createdAt: expect.any(String),
         updatedAt: expect.any(String),

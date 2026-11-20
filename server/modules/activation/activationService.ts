@@ -58,9 +58,9 @@ ${appUrl}/register/activate/${token}
     }
 
     const token = await this.activationRepository.activate(tokenId, [
-      Permissions.CREATE_SESSIONS,
-      Permissions.READ_SESSIONS,
-      Permissions.UPDATE_USERS,
+      Permissions.CREATE_SESSION,
+      Permissions.READ_SESSION,
+      Permissions.UPDATE_USER,
     ])
 
     if (!token) {

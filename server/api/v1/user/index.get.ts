@@ -7,7 +7,7 @@ import { SessionService } from '~~/server/modules/sessions/sessionService'
 import { UserService } from '~~/server/modules/users/userService'
 import { unauthorizedError } from '~~/server/utils/errors'
 
-export default defineRouteHandler(requirePermissions([Permissions.READ_SESSIONS]), async event => {
+export default defineRouteHandler(requirePermissions([Permissions.READ_SESSION]), async event => {
   const sessionId = getCookie(event, 'session_id')
 
   if (!sessionId) {

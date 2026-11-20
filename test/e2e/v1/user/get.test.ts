@@ -32,9 +32,9 @@ describe('GET /v1/user', async () => {
     createdUser = await dynamicMocks.createUser(
       {
         permissions: [
-          PermissionValue.CREATE_SESSIONS,
-          PermissionValue.READ_SESSIONS,
-          PermissionValue.UPDATE_USERS,
+          PermissionValue.CREATE_SESSION,
+          PermissionValue.READ_SESSION,
+          PermissionValue.UPDATE_USER,
         ],
       },
       { merge: true, rebuild: true },
@@ -45,7 +45,7 @@ describe('GET /v1/user', async () => {
       {
         username: 'NoSessionRead',
         email: 'no.session.read@example.com',
-        permissions: [PermissionValue.READ_USERS, PermissionValue.CREATE_SESSIONS],
+        permissions: [PermissionValue.READ_USER, PermissionValue.CREATE_SESSION],
       },
       { merge: true },
     )
@@ -85,9 +85,9 @@ describe('GET /v1/user', async () => {
         username: createdUser.username,
         email: createdUser.email,
         permissions: [
-          PermissionValue.CREATE_SESSIONS,
-          PermissionValue.READ_SESSIONS,
-          PermissionValue.UPDATE_USERS,
+          PermissionValue.CREATE_SESSION,
+          PermissionValue.READ_SESSION,
+          PermissionValue.UPDATE_USER,
         ],
         createdAt: createdUser.createdAt?.toISOString(),
         updatedAt: createdUser.updatedAt?.toISOString(),
@@ -116,17 +116,17 @@ describe('GET /v1/user', async () => {
     })
   })
 
-  describe('Authenticated user without "READ_SESSIONS"', () => {
+  describe('Authenticated user without "READ_SESSION"', () => {
     const forbiddenBody = {
       statusCode: 403,
       message: 'You do not have permission to perform this action',
       data: {
         code: 'ACCESS_DENIED',
-        missing: [PermissionValue.READ_SESSIONS],
+        missing: [PermissionValue.READ_SESSION],
       },
     }
 
-    it('Rejects a user whose permissions do not include "READ_SESSIONS"', async () => {
+    it('Rejects a user whose permissions do not include "READ_SESSION"', async () => {
       const response = await requestWithSession(sessionWithoutSessionRead.token)
 
       expect(response.status).toBe(403)

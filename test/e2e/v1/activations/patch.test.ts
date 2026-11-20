@@ -31,7 +31,7 @@ describe('PATCH /v1/activations/:tokenId', async () => {
       {
         username: 'JaneDoe',
         email: 'jane.doe@example.com',
-        permissions: [Permissions.CREATE_SESSIONS],
+        permissions: [Permissions.CREATE_SESSION],
       },
       { merge: true },
     )
@@ -93,9 +93,9 @@ describe('PATCH /v1/activations/:tokenId', async () => {
       const activated = await users.findById(inactiveUser.id)
 
       expect(activated?.permissions).toEqual([
-        Permissions.CREATE_SESSIONS,
-        Permissions.READ_SESSIONS,
-        Permissions.UPDATE_USERS,
+        Permissions.CREATE_SESSION,
+        Permissions.READ_SESSION,
+        Permissions.UPDATE_USER,
       ])
     })
 
@@ -162,7 +162,7 @@ describe('PATCH /v1/activations/:tokenId', async () => {
         {
           username: 'ActivatedUser',
           email: 'activated@example.com',
-          permissions: [Permissions.CREATE_SESSIONS],
+          permissions: [Permissions.CREATE_SESSION],
         },
         { merge: true },
       )
