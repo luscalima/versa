@@ -208,12 +208,13 @@ describe('Account registration and activation flow', () => {
 
       const response = await requestAccountActivation(token)
 
-      expect(response.status).toBe(400)
+      expect(response.status).toBe(403)
       expect(await response.json()).toEqual({
-        statusCode: 400,
-        message: 'The provided token is invalid or expired.',
+        statusCode: 403,
+        message: 'You do not have permission to perform this action',
         data: {
-          code: 'TOKEN_UNAVAILABLE',
+          code: 'ACCESS_DENIED',
+          missing: [Permissions.READ_ACTIVATION_TOKEN],
         },
       })
     })

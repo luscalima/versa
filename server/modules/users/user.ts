@@ -105,6 +105,10 @@ export class AnonymousUser implements UserContext {
   readonly id = ANONYMOUS_USER_ID
   readonly username = ANONYMOUS_USER_ID
   readonly email = ''
-  readonly permissions: Permissions[] = [Permissions.CREATE_SESSIONS]
+  readonly permissions: Permissions[] = [
+    Permissions.CREATE_USERS,
+    Permissions.CREATE_SESSIONS,
+    Permissions.READ_ACTIVATION_TOKEN,
+  ]
   readonly isAnonymous = true
 }

@@ -7,6 +7,7 @@ import type { AppError } from '~~/server/utils/errors'
 import { useAppUrl } from '~~/server/utils/useAppUrl'
 import { Permissions } from '../authorization/permissions'
 import type { ActivationToken } from './activationToken'
+import { authorize } from '../authorization/authorization'
 
 export class ActivationService {
   static EXPIRATION_IN_MILLISECONDS = 15 * 60 * 1000
@@ -39,6 +40,23 @@ ${appUrl}/register/activate/${token}
   }
 
   async activate(tokenId: string): Promise<Result<ActivationToken, AppError>> {
+    const user = await this.activationRepository.findUserByTokenId(tokenId)
+
+    if (!user) {
+      return err(
+        badRequestError({
+          code: 'TOKEN_UNAVAILABLE',
+          message: 'The provided token is invalid or expired.',
+        }),
+      )
+    }
+
+    const authorizationResult = authorize(user, [Permissions.READ_ACTIVATION_TOKEN])
+
+    if (authorizationResult.isErr()) {
+      return err(authorizationResult.error)
+    }
+
     const token = await this.activationRepository.activate(tokenId, [
       Permissions.CREATE_SESSIONS,
       Permissions.READ_SESSIONS,

@@ -4,6 +4,8 @@ import { faker } from '@faker-js/faker'
 import bcrypt from 'bcrypt'
 import type { SessionProps } from '#server/modules/sessions/session'
 import { SessionService } from '#server/modules/sessions/sessionService'
+import type { ActivationTokenProps } from '#server/modules/activation/activationToken'
+import { ActivationService } from '#server/modules/activation/activationService'
 import type { Permissions } from '#server/modules/authorization/permissions'
 
 type DynamicActions = Partial<{
@@ -69,6 +71,22 @@ async function createSession(
   return result
 }
 
+async function createActivationToken(
+  payload: Partial<ActivationTokenProps>,
+  actions?: DynamicActions,
+): Promise<ActivationTokenProps> {
+  const data = { ...staticMocks.activationToken, ...payload }
+
+  if (actions?.rebuild) {
+    await rebuildDatabase()
+  }
+
+  const db = await getDatabase()
+  const [result] = await db('user_activation_tokens').insert(data).returning('*')
+
+  return result
+}
+
 async function getSession(token = staticMocks.session.token): Promise<SessionProps> {
   const table = 'sessions'
   const db = await getDatabase()
@@ -79,6 +97,7 @@ async function getSession(token = staticMocks.session.token): Promise<SessionPro
 export const dynamicMocks = {
   createUser,
   createSession,
+  createActivationToken,
   getSession,
 }
 
@@ -95,6 +114,12 @@ export const staticMocks = {
     // using a getter so that the result is affected by fake timers
     get expiresAt() {
       return new Date(Date.now() + SessionService.EXPIRATION_IN_MILLISECONDS)
+    },
+  },
+  activationToken: {
+    // using a getter so that the result is affected by fake timers
+    get expiresAt() {
+      return new Date(Date.now() + ActivationService.EXPIRATION_IN_MILLISECONDS)
     },
   },
 }

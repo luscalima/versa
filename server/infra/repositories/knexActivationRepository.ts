@@ -2,7 +2,7 @@ import type { Knex } from 'knex'
 import { ActivationToken } from '~~/server/modules/activation/activationToken'
 import type { ActivationRepository } from '~~/server/modules/activation/activationRepository'
 import type { Permissions } from '~~/server/modules/authorization/permissions'
-import type { User } from '~~/server/modules/users/user'
+import { User } from '~~/server/modules/users/user'
 
 export class KnexActivationRepository implements ActivationRepository {
   private readonly tokensTable = 'user_activation_tokens'
@@ -33,6 +33,19 @@ export class KnexActivationRepository implements ActivationRepository {
     }
 
     return ActivationToken.fromPersistence(token)
+  }
+
+  async findUserByTokenId(tokenId: string): Promise<User | null> {
+    const user = await this.db(this.usersTable)
+      .join(this.tokensTable, `${this.usersTable}.id`, `${this.tokensTable}.userId`)
+      .where(`${this.tokensTable}.id`, tokenId)
+      .first(`${this.usersTable}.*`)
+
+    if (!user) {
+      return null
+    }
+
+    return User.fromPersistence(user)
   }
 
   async activate(id: string, permissions: Permissions[]): Promise<ActivationToken | null> {
