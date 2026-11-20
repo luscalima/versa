@@ -5,6 +5,7 @@ import {
   destroyDatabase,
   restoreDatabase,
   rebuildDatabase,
+  dynamicMocks,
   userRepository,
 } from '#test/helpers'
 import { version as uuidVersion } from 'uuid'
@@ -12,6 +13,43 @@ import { NativeHasherAdapter } from '#server/infra/adapters/nativeHasherAdapter'
 import { Permissions } from '#server/modules/authorization/permissions'
 
 describe('POST /v1/users', async () => {
+  const userPayload = {
+    username: 'JohnDoe',
+    email: 'john.doe@example.com',
+    password: 'Password123!',
+  }
+
+  async function requestUserCreation(payload: Record<string, unknown>) {
+    return fetch(api('/v1/users'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    })
+  }
+
+  async function requestUserCreationWithRawBody(body: string) {
+    return fetch(api('/v1/users'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body,
+    })
+  }
+
+  async function requestUserCreationWithSession(token: string, payload: Record<string, unknown>) {
+    return fetch(api('/v1/users'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: `session_id=${token}`,
+      },
+      body: JSON.stringify(payload),
+    })
+  }
+
   beforeEach(async () => {
     await rebuildDatabase()
   })
@@ -21,32 +59,6 @@ describe('POST /v1/users', async () => {
   })
 
   describe('Anonymous user', () => {
-    const userPayload = {
-      username: 'JohnDoe',
-      email: 'john.doe@example.com',
-      password: 'Password123!',
-    }
-
-    async function requestUserCreation(payload: Record<string, unknown>) {
-      return fetch(api('/v1/users'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      })
-    }
-
-    async function requestUserCreationWithRawBody(body: string) {
-      return fetch(api('/v1/users'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body,
-      })
-    }
-
     it('With unique and valid data', async () => {
       const response = await requestUserCreation(userPayload)
 
@@ -166,6 +178,71 @@ describe('POST /v1/users', async () => {
 
         await restoreDatabase()
       })
+    })
+  })
+
+  describe('Authenticated user', () => {
+    const forbiddenBody = {
+      statusCode: 403,
+      message: 'You do not have permission to perform this action',
+      data: {
+        code: 'ACCESS_DENIED',
+        missing: [Permissions.CREATE_USER],
+      },
+    }
+
+    it('Rejects an activated user without "CREATE_USER" permission', async () => {
+      const requester = await dynamicMocks.createUser(
+        {
+          username: 'ActivatedRequester',
+          email: 'activated.requester@example.com',
+          permissions: [
+            Permissions.CREATE_SESSION,
+            Permissions.READ_SESSION,
+            Permissions.UPDATE_USER,
+          ],
+        },
+        { merge: true },
+      )
+      const session = await dynamicMocks.createSession(
+        { userId: requester.id, token: 'a'.repeat(96) },
+        { merge: true },
+      )
+
+      const response = await requestUserCreationWithSession(session.token, userPayload)
+
+      expect(response.status).toBe(403)
+      expect(await response.json()).toEqual(forbiddenBody)
+
+      const repository = await userRepository()
+
+      expect(await repository.findByUsername(userPayload.username)).toBeNull()
+      expect(await repository.findByEmail(userPayload.email)).toBeNull()
+    })
+
+    it('Rejects an inactive user that only holds "READ_ACTIVATION_TOKEN"', async () => {
+      const requester = await dynamicMocks.createUser(
+        {
+          username: 'InactiveRequester',
+          email: 'inactive.requester@example.com',
+          permissions: [Permissions.READ_ACTIVATION_TOKEN],
+        },
+        { merge: true },
+      )
+      const session = await dynamicMocks.createSession(
+        { userId: requester.id, token: 'b'.repeat(96) },
+        { merge: true },
+      )
+
+      const response = await requestUserCreationWithSession(session.token, userPayload)
+
+      expect(response.status).toBe(403)
+      expect(await response.json()).toEqual(forbiddenBody)
+
+      const repository = await userRepository()
+
+      expect(await repository.findByUsername(userPayload.username)).toBeNull()
+      expect(await repository.findByEmail(userPayload.email)).toBeNull()
     })
   })
 })

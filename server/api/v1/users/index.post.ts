@@ -15,7 +15,7 @@ export const userSchema = z.object({
   permissions: z.array(z.nativeEnum(Permissions)).optional(),
 })
 
-export default defineRouteHandler(async event => {
+export default defineRouteHandler(requirePermissions([Permissions.CREATE_USER]), async event => {
   const payload = await useValidateBody(event, userSchema, 'User creation validation failed.')
 
   if (payload.isErr()) {
