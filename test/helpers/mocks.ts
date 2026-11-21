@@ -16,7 +16,7 @@ type DynamicActions = Partial<{
 
 type UserSeed = Partial<CreateUserProps> & Partial<{ permissions: Permissions[] }>
 
-type SeededUser = UserProps & { permissions: Permissions[] }
+export type SeededUser = UserProps & { permissions: Permissions[] }
 
 type ActivatedUserSeed = Omit<UserSeed, 'permissions'> & {
   token?: string

@@ -1,10 +1,10 @@
 export const Permissions = {
   READ_ACTIVATION_TOKEN: 'read:activation_token',
-  READ_USER: 'read:users',
-  CREATE_USER: 'create:users',
-  READ_SESSION: 'read:sessions',
-  CREATE_SESSION: 'create:sessions',
-  UPDATE_USER: 'update:users',
+  READ_USER: 'read:user',
+  CREATE_USER: 'create:user',
+  READ_SESSION: 'read:session',
+  CREATE_SESSION: 'create:session',
+  UPDATE_USER: 'update:user',
 } as const
 
 export type Permissions = (typeof Permissions)[keyof typeof Permissions]

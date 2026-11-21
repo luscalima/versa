@@ -3,6 +3,7 @@ import { useValidateBody } from '~~/server/utils/useValidateBody'
 import { UserService } from '~~/server/modules/users/userService'
 import { NativeHasherAdapter } from '~~/server/infra/adapters/nativeHasherAdapter'
 import { Permissions } from '~~/server/modules/authorization/permissions'
+import { can } from '~~/server/modules/authorization/authorization'
 import { z } from 'zod'
 
 export const userSchema = z.object({
@@ -20,6 +21,21 @@ export default defineRouteHandler(requirePermissions([Permissions.READ_USER]), a
 
   if (payload.isErr()) {
     return payload.error
+  }
+
+  const targetUser = await service.getByUsername(username)
+
+  if (targetUser.isErr()) {
+    return targetUser.error
+  }
+
+  const canResult = can(Permissions.UPDATE_USER, {
+    subject: event.context.user,
+    resource: targetUser.value,
+  })
+
+  if (canResult.isErr()) {
+    return canResult.error
   }
 
   const result = await service.update(username, payload.value)
