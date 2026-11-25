@@ -162,5 +162,43 @@ describe('authorization', () => {
       expect(result.isErr()).toBe(true)
       expect(result._unsafeUnwrapErr().statusCode).toBe(401)
     })
+
+    it('allows when at least one permission passes in "any" mode', () => {
+      const subject: UserContext = {
+        ...user,
+        permissions: [Permissions.READ_USER],
+      }
+
+      const result = can(
+        [Permissions.UPDATE_USER, Permissions.READ_USER],
+        { subject, resource: createUserResource('another-id') },
+        'any',
+      )
+
+      expect(result.isOk()).toBe(true)
+      expect(result._unsafeUnwrap()).toBe(true)
+    })
+
+    it('requires every permission to pass in "all" mode', () => {
+      const subject: UserContext = {
+        ...user,
+        permissions: [...user.permissions, Permissions.UPDATE_USER],
+      }
+
+      const allowed = can(
+        [Permissions.UPDATE_USER, Permissions.READ_USER],
+        { subject, resource: createUserResource() },
+        'all',
+      )
+      const denied = can(
+        [Permissions.UPDATE_USER, Permissions.READ_USER],
+        { subject, resource: createUserResource('another-id') },
+        'all',
+      )
+
+      expect(allowed.isOk()).toBe(true)
+      expect(denied.isErr()).toBe(true)
+      expect(denied._unsafeUnwrapErr().statusCode).toBe(403)
+    })
   })
 })

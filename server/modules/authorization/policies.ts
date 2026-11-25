@@ -9,9 +9,22 @@ type ResourceMap = {
   activation_token: ActivationToken
 }
 
+type PermissionResource<P extends Permissions> = P extends `${string}:${infer R}:${string}`
+  ? R
+  : P extends `${string}:${infer R}`
+    ? R
+    : never
+
+type IsUnion<T, U = T> = T extends unknown ? ([U] extends [T] ? false : true) : never
+
+export type SharedResource<Ps extends readonly Permissions[]> =
+  IsUnion<PermissionResource<Ps[number]>> extends true
+    ? { readonly error: 'All permissions must target the same resource' }
+    : ResourceMap[PermissionResource<Ps[number]>]
+
 export type PermissionContext<P extends Permissions> = {
   subject: UserContext
-  resource: ResourceMap[P extends `${string}:${infer R}` ? R : never]
+  resource: ResourceMap[PermissionResource<P>]
 }
 
 type PoliciesMap = Partial<{

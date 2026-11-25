@@ -3,7 +3,7 @@ import type { AppError } from '~~/server/utils/errors'
 import { forbiddenError, unauthorizedError } from '~~/server/utils/errors'
 import type { UserContext } from '../users/user'
 import type { Permissions } from './permissions'
-import type { PermissionContext } from './policies'
+import type { PermissionContext, SharedResource } from './policies'
 import { Policies } from './policies'
 
 export type AuthorizationMode = 'all' | 'any'
@@ -112,8 +112,28 @@ export function authorize(
 export function can<P extends Permissions>(
   permission: P,
   context: PermissionContext<P>,
+  mode?: AuthorizationMode,
+): Result<boolean, AppError>
+export function can<Ps extends readonly Permissions[]>(
+  permissions: Ps,
+  context: { subject: UserContext; resource: SharedResource<Ps> },
+  mode?: AuthorizationMode,
+): Result<boolean, AppError>
+export function can(
+  permissions: Permissions | readonly Permissions[],
+  context: { subject: UserContext; resource: unknown },
+  mode: AuthorizationMode = 'all',
 ): Result<boolean, AppError> {
-  const result = evaluate(context.subject, [{ permission, context }], 'all')
+  const list = (Array.isArray(permissions) ? permissions : [permissions]) as readonly Permissions[]
+
+  const result = evaluate(
+    context.subject,
+    list.map(permission => ({
+      permission,
+      context: context as PermissionContext<Permissions>,
+    })),
+    mode,
+  )
 
   return result.map(() => true)
 }
