@@ -5,6 +5,7 @@ export const Permissions = {
   READ_SESSION: 'read:session',
   CREATE_SESSION: 'create:session',
   UPDATE_USER: 'update:user',
+  UPDATE_USER_OTHERS: 'update:user:others',
 } as const
 
 export type Permissions = (typeof Permissions)[keyof typeof Permissions]

@@ -29,10 +29,14 @@ export default defineRouteHandler(requirePermissions([Permissions.READ_USER]), a
     return targetUser.error
   }
 
-  const canResult = can(Permissions.UPDATE_USER, {
-    subject: event.context.user,
-    resource: targetUser.value,
-  })
+  const canResult = can(
+    [Permissions.UPDATE_USER, Permissions.UPDATE_USER_OTHERS],
+    {
+      subject: event.context.user,
+      resource: targetUser.value,
+    },
+    'any',
+  )
 
   if (canResult.isErr()) {
     return canResult.error

@@ -4,7 +4,7 @@ import {
   hasPermission,
   hasPermissions,
 } from '#server/modules/authorization/authorization'
-import { Permissions } from '#server/modules/authorization/permissions'
+import { isPermission, Permissions } from '#server/modules/authorization/permissions'
 import { AnonymousUser, User, type UserContext } from '#server/modules/users/user'
 
 const user: UserContext = {
@@ -199,6 +199,45 @@ describe('authorization', () => {
       expect(allowed.isOk()).toBe(true)
       expect(denied.isErr()).toBe(true)
       expect(denied._unsafeUnwrapErr().statusCode).toBe(403)
+    })
+  })
+
+  describe('UPDATE_USER_OTHERS permission', () => {
+    it('is exposed as "update:user:others"', () => {
+      expect(Permissions.UPDATE_USER_OTHERS).toBe('update:user:others')
+    })
+
+    it('is recognized as a valid permission', () => {
+      expect(isPermission('update:user:others')).toBe(true)
+    })
+
+    it('allows updating any user when the subject owns the permission', () => {
+      const subject: UserContext = {
+        ...user,
+        permissions: [...user.permissions, Permissions.UPDATE_USER_OTHERS],
+      }
+
+      const result = can(Permissions.UPDATE_USER_OTHERS, {
+        subject,
+        resource: createUserResource('another-id'),
+      })
+
+      expect(result.isOk()).toBe(true)
+      expect(result._unsafeUnwrap()).toBe(true)
+    })
+
+    it('rejects subjects that do not own the permission', () => {
+      const result = can(Permissions.UPDATE_USER_OTHERS, {
+        subject: user,
+        resource: createUserResource('another-id'),
+      })
+
+      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr().statusCode).toBe(403)
+      expect(result._unsafeUnwrapErr().data).toEqual({
+        code: 'ACCESS_DENIED',
+        missing: [Permissions.UPDATE_USER_OTHERS],
+      })
     })
   })
 })

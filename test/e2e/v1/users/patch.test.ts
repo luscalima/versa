@@ -319,4 +319,97 @@ describe('PATCH /v1/users/:username', async () => {
       })
     })
   })
+
+  describe('Privileged user', () => {
+    beforeEach(async () => {
+      const { user, session } = await dynamicMocks.createActivatedUserWithSession({
+        username: 'PrivilegedRequester',
+        email: 'privileged.requester@example.com',
+        extraPermissions: [Permissions.READ_USER, Permissions.UPDATE_USER_OTHERS],
+        token: 'e'.repeat(96),
+      })
+
+      requester = user
+      sessionToken = session.token
+    })
+
+    it('Updates another inactive user', async () => {
+      const newUsername = 'JaneDoe'
+      const response = await updateUser(staticMocks.user.username, { username: newUsername })
+
+      expect(response.status).toBe(200)
+
+      const data = await response.json()
+
+      expect(data.username).toBe(newUsername)
+      expect(data.email).toBe(staticMocks.user.email)
+
+      const repository = await userRepository()
+      const updated = await repository.findByUsername(newUsername)
+
+      expect(updated).not.toBeNull()
+    })
+
+    it('Updates another activated user', async () => {
+      const target = await dynamicMocks.createUser(
+        {
+          username: 'ActivatedTarget',
+          email: 'activated.target@example.com',
+          permissions: [
+            Permissions.CREATE_SESSION,
+            Permissions.READ_SESSION,
+            Permissions.UPDATE_USER,
+          ],
+        },
+        { merge: true },
+      )
+
+      const newEmail = 'updated.target@example.com'
+      const response = await updateUser(target.username, { email: newEmail })
+
+      expect(response.status).toBe(200)
+
+      const data = await response.json()
+
+      expect(data.username).toBe(target.username)
+      expect(data.email).toBe(newEmail)
+    })
+
+    it('Updates itself', async () => {
+      const response = await updateSelf({ username: 'PrivilegedRenamed' })
+
+      expect(response.status).toBe(200)
+
+      const data = await response.json()
+
+      expect(data.username).toBe('PrivilegedRenamed')
+    })
+
+    it('Updates another user with only the ":others" permission', async () => {
+      const othersOnlyRequester = await dynamicMocks.createUser(
+        {
+          username: 'OthersOnlyRequester',
+          email: 'others.only@example.com',
+          permissions: [Permissions.READ_USER, Permissions.UPDATE_USER_OTHERS],
+        },
+        { merge: true },
+      )
+      const othersOnlySession = await dynamicMocks.createSession(
+        { userId: othersOnlyRequester.id, token: 'f'.repeat(96) },
+        { merge: true },
+      )
+
+      requester = othersOnlyRequester
+      sessionToken = othersOnlySession.token
+
+      const newUsername = 'JaneDoe'
+      const response = await updateUser(staticMocks.user.username, { username: newUsername })
+
+      expect(response.status).toBe(200)
+
+      const data = await response.json()
+
+      expect(data.username).toBe(newUsername)
+    })
+  })
 })

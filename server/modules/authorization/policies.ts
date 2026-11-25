@@ -38,4 +38,7 @@ export const Policies: PoliciesMap = {
   [Permissions.UPDATE_USER]: ({ subject, resource }) => {
     return subject.id === resource.id
   },
+  [Permissions.UPDATE_USER_OTHERS]: () => {
+    return true
+  },
 }
