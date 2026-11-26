@@ -22,15 +22,12 @@ export default defineRouteHandler(requirePermissions([Permissions.READ_STATUS]),
   }
 
   const { version, maxConnections, openedConnections } = result.value
-  const canReadHiddenFields = hasPermission(
-    event.context.user,
-    Permissions.READ_STATUS_HIDDEN_FIELDS,
-  )
+  const canReadAllFields = hasPermission(event.context.user, Permissions.READ_STATUS_ALL)
 
   return {
     updatedAt: new Date().toISOString(),
     database: {
-      ...(canReadHiddenFields ? { version } : {}),
+      ...(canReadAllFields ? { version } : {}),
       maxConnections,
       openedConnections,
     },

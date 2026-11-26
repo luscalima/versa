@@ -222,13 +222,13 @@ describe('authorization', () => {
       expect(Permissions.READ_STATUS).toBe('read:status')
     })
 
-    it('exposes "read:status:hidden_fields"', () => {
-      expect(Permissions.READ_STATUS_HIDDEN_FIELDS).toBe('read:status:hidden_fields')
+    it('exposes "read:status:all"', () => {
+      expect(Permissions.READ_STATUS_ALL).toBe('read:status:all')
     })
 
     it('recognizes both as valid permissions', () => {
       expect(isPermission('read:status')).toBe(true)
-      expect(isPermission('read:status:hidden_fields')).toBe(true)
+      expect(isPermission('read:status:all')).toBe(true)
     })
   })
 

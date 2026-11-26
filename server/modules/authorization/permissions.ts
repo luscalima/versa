@@ -9,7 +9,7 @@ export const Permissions = {
   READ_MIGRATION: 'read:migration',
   RUN_MIGRATION: 'run:migration',
   READ_STATUS: 'read:status',
-  READ_STATUS_HIDDEN_FIELDS: 'read:status:hidden_fields',
+  READ_STATUS_ALL: 'read:status:all',
 } as const
 
 export type Permissions = (typeof Permissions)[keyof typeof Permissions]

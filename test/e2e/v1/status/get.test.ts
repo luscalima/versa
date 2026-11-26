@@ -21,7 +21,7 @@ describe('GET /v1/status', async () => {
       username: 'StatusViewer',
       email: 'status.viewer@example.com',
       token: 'a'.repeat(96),
-      extraPermissions: [Permissions.READ_STATUS_HIDDEN_FIELDS],
+      extraPermissions: [Permissions.READ_STATUS_ALL],
     })
     fullAccessSession = fullAccess.session
 
@@ -98,7 +98,7 @@ describe('GET /v1/status', async () => {
       expect(body.database.openedConnections).toBeGreaterThanOrEqual(0)
     })
 
-    it('Returns the database version to a user with "READ_STATUS_HIDDEN_FIELDS" permission', async () => {
+    it('Returns the database version to a user with "READ_STATUS_ALL" permission', async () => {
       const response = await requestStatus(fullAccessSession.token)
 
       expect(response.status).toBe(200)
