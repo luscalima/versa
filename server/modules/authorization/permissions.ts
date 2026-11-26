@@ -8,6 +8,7 @@ export const Permissions = {
   UPDATE_USER_OTHERS: 'update:user:others',
   READ_MIGRATION: 'read:migration',
   RUN_MIGRATION: 'run:migration',
+  READ_STATUS: 'read:status',
 } as const
 
 export type Permissions = (typeof Permissions)[keyof typeof Permissions]

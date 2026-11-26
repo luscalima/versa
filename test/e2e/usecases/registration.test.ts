@@ -198,6 +198,7 @@ describe('Account registration and activation flow', () => {
         Permissions.CREATE_SESSION,
         Permissions.READ_SESSION,
         Permissions.UPDATE_USER,
+        Permissions.READ_STATUS,
       ])
     })
 
@@ -337,6 +338,7 @@ describe('Account registration and activation flow', () => {
           Permissions.CREATE_SESSION,
           Permissions.READ_SESSION,
           Permissions.UPDATE_USER,
+          Permissions.READ_STATUS,
         ],
         createdAt: expect.any(String),
         updatedAt: expect.any(String),

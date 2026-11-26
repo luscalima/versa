@@ -89,6 +89,7 @@ describe('GET /v1/user', async () => {
           PermissionValue.CREATE_SESSION,
           PermissionValue.READ_SESSION,
           PermissionValue.UPDATE_USER,
+          PermissionValue.READ_STATUS,
         ],
         createdAt: createdUser.createdAt?.toISOString(),
         updatedAt: createdUser.updatedAt?.toISOString(),

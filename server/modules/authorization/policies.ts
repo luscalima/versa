@@ -8,6 +8,7 @@ type ResourceMap = {
   session: Session
   activation_token: ActivationToken
   migration: unknown
+  status: unknown
 }
 
 type PermissionResource<P extends Permissions> = P extends `${string}:${infer R}:${string}`

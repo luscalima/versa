@@ -96,6 +96,7 @@ describe('PATCH /v1/activations/:tokenId', async () => {
         Permissions.CREATE_SESSION,
         Permissions.READ_SESSION,
         Permissions.UPDATE_USER,
+        Permissions.READ_STATUS,
       ])
     })
 
