@@ -202,6 +202,21 @@ describe('authorization', () => {
     })
   })
 
+  describe('migration permissions', () => {
+    it('exposes "read:migration"', () => {
+      expect(Permissions.READ_MIGRATION).toBe('read:migration')
+    })
+
+    it('exposes "run:migration"', () => {
+      expect(Permissions.RUN_MIGRATION).toBe('run:migration')
+    })
+
+    it('recognizes both as valid permissions', () => {
+      expect(isPermission('read:migration')).toBe(true)
+      expect(isPermission('run:migration')).toBe(true)
+    })
+  })
+
   describe('UPDATE_USER_OTHERS permission', () => {
     it('is exposed as "update:user:others"', () => {
       expect(Permissions.UPDATE_USER_OTHERS).toBe('update:user:others')
