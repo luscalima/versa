@@ -217,6 +217,21 @@ describe('authorization', () => {
     })
   })
 
+  describe('status permissions', () => {
+    it('exposes "read:status"', () => {
+      expect(Permissions.READ_STATUS).toBe('read:status')
+    })
+
+    it('exposes "read:status:hidden_fields"', () => {
+      expect(Permissions.READ_STATUS_HIDDEN_FIELDS).toBe('read:status:hidden_fields')
+    })
+
+    it('recognizes both as valid permissions', () => {
+      expect(isPermission('read:status')).toBe(true)
+      expect(isPermission('read:status:hidden_fields')).toBe(true)
+    })
+  })
+
   describe('UPDATE_USER_OTHERS permission', () => {
     it('is exposed as "update:user:others"', () => {
       expect(Permissions.UPDATE_USER_OTHERS).toBe('update:user:others')

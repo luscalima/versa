@@ -34,6 +34,7 @@ async function waitForAllServices() {
     resources: [api('/v1/status', true), mailHealthyStatus()],
     timeout: 60_000,
     interval: 500,
+    validateStatus: status => status === 200 || status === 401,
   })
 }
 
