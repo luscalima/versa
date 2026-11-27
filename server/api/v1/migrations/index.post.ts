@@ -1,6 +1,11 @@
 import { KnexDatabaseRepository } from '~~/server/infra/repositories/knexDatabaseRepository'
 import { Permissions } from '~~/server/modules/authorization/permissions'
 import { DatabaseService } from '~~/server/modules/database/databaseService'
+import {
+  migrationRunSchema,
+  serializeMigrationRun,
+} from '~~/server/modules/serialization/migration'
+import { validateResponse } from '~~/server/utils/validateResponse'
 
 export default defineRouteHandler(requirePermissions([Permissions.RUN_MIGRATION]), async event => {
   const repository = new KnexDatabaseRepository(useDatabase())
@@ -11,11 +16,9 @@ export default defineRouteHandler(requirePermissions([Permissions.RUN_MIGRATION]
     return result.error
   }
 
-  const { completed } = result.value
+  const response = validateResponse(migrationRunSchema, serializeMigrationRun(result.value))
 
-  setResponseStatus(event, completed.length > 0 ? 201 : 200)
+  setResponseStatus(event, response.completed.length > 0 ? 201 : 200)
 
-  return {
-    completed,
-  }
+  return response
 })

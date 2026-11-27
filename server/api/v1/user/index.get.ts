@@ -3,9 +3,11 @@ import { NativeHasherAdapter } from '~~/server/infra/adapters/nativeHasherAdapte
 import { KnexSessionRepository } from '~~/server/infra/repositories/knexSessionRepository'
 import { KnexUserRepository } from '~~/server/infra/repositories/knexUserRepository'
 import { Permissions } from '~~/server/modules/authorization/permissions'
+import { fullUserSchema, serializeFullUser } from '~~/server/modules/serialization/user'
 import { SessionService } from '~~/server/modules/sessions/sessionService'
 import { UserService } from '~~/server/modules/users/userService'
 import { unauthorizedError } from '~~/server/utils/errors'
+import { validateResponse } from '~~/server/utils/validateResponse'
 
 export default defineRouteHandler(requirePermissions([Permissions.READ_SESSION]), async event => {
   const sessionId = getCookie(event, 'session_id')
@@ -44,5 +46,5 @@ export default defineRouteHandler(requirePermissions([Permissions.READ_SESSION])
     return userResult.error
   }
 
-  return userResult.value.toDTO()
+  return validateResponse(fullUserSchema, serializeFullUser(userResult.value))
 })

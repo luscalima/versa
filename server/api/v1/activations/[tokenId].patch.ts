@@ -2,8 +2,13 @@ import { z } from 'zod'
 import { NodemailerMailAdapter } from '~~/server/infra/adapters/nodemailerMailAdapter'
 import { KnexActivationRepository } from '~~/server/infra/repositories/knexActivationRepository'
 import { ActivationService } from '~~/server/modules/activation/activationService'
+import {
+  activationTokenSchema,
+  serializeActivationToken,
+} from '~~/server/modules/serialization/activation'
 import { badRequestError } from '~~/server/utils/errors'
 import { useValidateParams } from '~~/server/utils/useValidateParams'
+import { validateResponse } from '~~/server/utils/validateResponse'
 
 const activationTokenParamsSchema = z.object({
   tokenId: z.string().uuid(),
@@ -43,5 +48,5 @@ export default defineRouteHandler(async event => {
 
   setResponseStatus(event, 200)
 
-  return activationResult.value.toDTO()
+  return validateResponse(activationTokenSchema, serializeActivationToken(activationResult.value))
 })

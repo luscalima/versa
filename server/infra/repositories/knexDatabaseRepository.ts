@@ -18,7 +18,7 @@ export class KnexDatabaseRepository implements DatabaseRepository {
     const [version, maxConnections, openedConnections] = await Promise.all([
       this.db.raw<{ rows: [{ server_version: string }] }>('SHOW server_version;'),
       this.db.raw<{ rows: [{ max_connections: string }] }>('SHOW max_connections;'),
-      this.db('pg_stat_activity').select('*').where('datname', this.databaseName),
+      this.db('pg_stat_activity').select('pid').where('datname', this.databaseName),
     ])
 
     return {

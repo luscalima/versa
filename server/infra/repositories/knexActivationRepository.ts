@@ -4,6 +4,17 @@ import type { ActivationRepository } from '~~/server/modules/activation/activati
 import type { Permissions } from '~~/server/modules/authorization/permissions'
 import { User } from '~~/server/modules/users/user'
 
+const TOKEN_COLUMNS = ['id', 'userId', 'usedAt', 'expiresAt', 'createdAt', 'updatedAt']
+const USER_COLUMNS = [
+  'id',
+  'username',
+  'email',
+  'password',
+  'permissions',
+  'createdAt',
+  'updatedAt',
+]
+
 export class KnexActivationRepository implements ActivationRepository {
   private readonly tokensTable = 'user_activation_tokens'
   private readonly usersTable = 'users'
@@ -16,13 +27,14 @@ export class KnexActivationRepository implements ActivationRepository {
         userId: user.id,
         expiresAt,
       })
-      .returning('*')
+      .returning('id')
 
     return saveResult.id
   }
 
   async findValidById(id: string): Promise<ActivationToken | null> {
     const token = await this.db(this.tokensTable)
+      .select(...TOKEN_COLUMNS)
       .where({ id })
       .whereNull('usedAt')
       .where('expiresAt', '>', new Date())
@@ -37,9 +49,10 @@ export class KnexActivationRepository implements ActivationRepository {
 
   async findUserByTokenId(tokenId: string): Promise<User | null> {
     const user = await this.db(this.usersTable)
+      .select(USER_COLUMNS.map(column => `${this.usersTable}.${column}`))
       .join(this.tokensTable, `${this.usersTable}.id`, `${this.tokensTable}.userId`)
       .where(`${this.tokensTable}.id`, tokenId)
-      .first(`${this.usersTable}.*`)
+      .first()
 
     if (!user) {
       return null
@@ -57,7 +70,7 @@ export class KnexActivationRepository implements ActivationRepository {
         .whereNull('usedAt')
         .where('expiresAt', '>', now)
         .update({ usedAt: now, updatedAt: now })
-        .returning('*')
+        .returning(TOKEN_COLUMNS)
 
       if (!token) {
         return null

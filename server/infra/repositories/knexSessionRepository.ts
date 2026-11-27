@@ -3,25 +3,33 @@ import { Session } from '~~/server/modules/sessions/session'
 import type { SessionRepository } from '~~/server/modules/sessions/sessionRepository'
 import { useModelProps } from '~~/server/utils/useModelProps'
 
+const SESSION_COLUMNS = ['id', 'token', 'userId', 'expiresAt', 'createdAt', 'updatedAt']
+
 export class KnexSessionRepository implements SessionRepository {
   private readonly table = 'sessions'
 
   constructor(private readonly db: Knex) {}
 
   async save(session: Session): Promise<Session> {
-    const [saveResult] = await this.db(this.table).insert(useModelProps(session)).returning('*')
+    const [saveResult] = await this.db(this.table)
+      .insert(useModelProps(session))
+      .returning(SESSION_COLUMNS)
 
     return Session.fromPersistence(saveResult)
   }
 
   async update(id: string, session: Partial<Session>): Promise<Session> {
-    const [updateResult] = await this.db(this.table).where({ id }).update(session).returning('*')
+    const [updateResult] = await this.db(this.table)
+      .where({ id })
+      .update(session)
+      .returning(SESSION_COLUMNS)
 
     return Session.fromPersistence(updateResult)
   }
 
   async findValid(token: string): Promise<Session | null> {
     const session = await this.db(this.table)
+      .select(...SESSION_COLUMNS)
       .where({ token })
       .where('expiresAt', '>=', new Date())
       .first()

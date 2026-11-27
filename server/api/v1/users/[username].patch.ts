@@ -4,6 +4,8 @@ import { UserService } from '~~/server/modules/users/userService'
 import { NativeHasherAdapter } from '~~/server/infra/adapters/nativeHasherAdapter'
 import { Permissions } from '~~/server/modules/authorization/permissions'
 import { can } from '~~/server/modules/authorization/authorization'
+import { fullUserSchema, serializeFullUser } from '~~/server/modules/serialization/user'
+import { validateResponse } from '~~/server/utils/validateResponse'
 import { z } from 'zod'
 
 export const userSchema = z.object({
@@ -50,5 +52,5 @@ export default defineRouteHandler(async event => {
 
   setResponseStatus(event, 200)
 
-  return result.value.toDTO()
+  return validateResponse(fullUserSchema, serializeFullUser(result.value))
 })

@@ -8,7 +8,9 @@ import { NodemailerMailAdapter } from '~~/server/infra/adapters/nodemailerMailAd
 import { KnexActivationRepository } from '~~/server/infra/repositories/knexActivationRepository'
 import { can } from '~~/server/modules/authorization/authorization'
 import { Permissions } from '~~/server/modules/authorization/permissions'
+import { fullUserSchema, serializeFullUser } from '~~/server/modules/serialization/user'
 import type { User } from '~~/server/modules/users/user'
+import { validateResponse } from '~~/server/utils/validateResponse'
 
 export const userSchema = z.object({
   username: z.string().nonempty().trim(),
@@ -57,5 +59,5 @@ export default defineRouteHandler(async event => {
 
   setResponseStatus(event, 201)
 
-  return userResult.value.toDTO()
+  return validateResponse(fullUserSchema, serializeFullUser(userResult.value))
 })
