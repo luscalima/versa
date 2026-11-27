@@ -1,16 +1,6 @@
-import {
-  authorize,
-  can,
-  hasPermission,
-  hasPermissions,
-} from '#server/modules/authorization/authorization'
+import { can, hasPermission, hasPermissions } from '#server/modules/authorization/authorization'
 import { isPermission, Permissions } from '#server/modules/authorization/permissions'
 import { AnonymousUser, User, type UserContext } from '#server/modules/users/user'
-
-// TODO: verificar quais rotas podem ser públicas e remover o middleware de permissão
-// TODO: verificar quais rotas devem ser protegidas e adicionar o middleware (unir com a anterior)
-// TODO: ver se é possível utilizar o único método can do authorization, mater o mesmo comportamento e simplificar o código
-// TODO: fazer esquemática de validação de saída
 
 const user: UserContext = {
   id: 'user-id',
@@ -67,23 +57,23 @@ describe('authorization', () => {
     })
   })
 
-  describe('authorize()', () => {
-    it('returns the user when authorized', () => {
-      const result = authorize(user, [Permissions.READ_USER])
+  describe('can() without resource', () => {
+    it('returns true when authorized', () => {
+      const result = can([Permissions.READ_USER], { subject: user })
 
       expect(result.isOk()).toBe(true)
-      expect(result._unsafeUnwrap()).toBe(user)
+      expect(result._unsafeUnwrap()).toBe(true)
     })
 
     it('rejects anonymous users as unauthorized', () => {
-      const result = authorize(new AnonymousUser(), [Permissions.READ_USER])
+      const result = can([Permissions.READ_USER], { subject: new AnonymousUser() })
 
       expect(result.isErr()).toBe(true)
       expect(result._unsafeUnwrapErr().statusCode).toBe(401)
     })
 
     it('rejects users missing permissions as forbidden and reports them', () => {
-      const result = authorize(user, [Permissions.READ_USER, Permissions.UPDATE_USER])
+      const result = can([Permissions.READ_USER, Permissions.UPDATE_USER], { subject: user })
 
       expect(result.isErr()).toBe(true)
 
@@ -94,6 +84,17 @@ describe('authorization', () => {
         code: 'ACCESS_DENIED',
         missing: [Permissions.UPDATE_USER],
       })
+    })
+
+    it('skips the policy when no resource is provided', () => {
+      const subject: UserContext = {
+        ...user,
+        permissions: [...user.permissions, Permissions.UPDATE_USER],
+      }
+      const result = can(Permissions.UPDATE_USER, { subject })
+
+      expect(result.isOk()).toBe(true)
+      expect(result._unsafeUnwrap()).toBe(true)
     })
   })
 

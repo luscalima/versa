@@ -7,7 +7,7 @@ import type { AppError } from '~~/server/utils/errors'
 import { useAppUrl } from '~~/server/utils/useAppUrl'
 import { Permissions } from '../authorization/permissions'
 import type { ActivationToken } from './activationToken'
-import { authorize } from '../authorization/authorization'
+import { can } from '../authorization/authorization'
 
 export class ActivationService {
   static EXPIRATION_IN_MILLISECONDS = 15 * 60 * 1000
@@ -51,7 +51,7 @@ ${appUrl}/register/activate/${token}
       )
     }
 
-    const authorizationResult = authorize(user, [Permissions.READ_ACTIVATION_TOKEN])
+    const authorizationResult = can(Permissions.READ_ACTIVATION_TOKEN, { subject: user })
 
     if (authorizationResult.isErr()) {
       return err(authorizationResult.error)

@@ -97,40 +97,29 @@ function evaluate(
   )
 }
 
-export function authorize(
-  user: UserContext,
-  permissions: readonly Permissions[],
-  mode: AuthorizationMode = 'all',
-): Result<UserContext, AppError> {
-  return evaluate(
-    user,
-    permissions.map(permission => ({ permission })),
-    mode,
-  )
-}
-
 export function can<P extends Permissions>(
   permission: P,
-  context: PermissionContext<P>,
+  context: { subject: UserContext; resource?: PermissionContext<P>['resource'] },
   mode?: AuthorizationMode,
 ): Result<boolean, AppError>
 export function can<Ps extends readonly Permissions[]>(
   permissions: Ps,
-  context: { subject: UserContext; resource: SharedResource<Ps> },
+  context: { subject: UserContext; resource?: SharedResource<Ps> },
   mode?: AuthorizationMode,
 ): Result<boolean, AppError>
 export function can(
   permissions: Permissions | readonly Permissions[],
-  context: { subject: UserContext; resource: unknown },
+  context: { subject: UserContext; resource?: unknown },
   mode: AuthorizationMode = 'all',
 ): Result<boolean, AppError> {
   const list = (Array.isArray(permissions) ? permissions : [permissions]) as readonly Permissions[]
+  const hasResource = context.resource !== undefined
 
   const result = evaluate(
     context.subject,
     list.map(permission => ({
       permission,
-      context: context as PermissionContext<Permissions>,
+      context: hasResource ? (context as PermissionContext<Permissions>) : undefined,
     })),
     mode,
   )
