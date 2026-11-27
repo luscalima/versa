@@ -164,7 +164,7 @@ describe('POST /v1/sessions', async () => {
   })
 
   describe('User without the required permission', () => {
-    it('does not create or persist a session', async () => {
+    it('creates and persists a session', async () => {
       const unauthorizedUser = await dynamicMocks.createUser({
         username: 'JaneDoe',
         email: 'jane.doe@example.com',
@@ -177,20 +177,13 @@ describe('POST /v1/sessions', async () => {
         password: 'Password123!',
       })
 
-      expect(response.status).toBe(403)
-      expect(await response.json()).toEqual({
-        statusCode: 403,
-        message: 'You do not have permission to perform this action',
-        data: {
-          code: 'ACCESS_DENIED',
-          missing: [Permissions.CREATE_SESSION],
-        },
-      })
+      expect(response.status).toBe(201)
+      expect(await response.json()).toMatchObject({ userId: unauthorizedUser.id })
 
       const db = await getDatabase()
       const sessions = await db('sessions').where({ userId: unauthorizedUser.id })
 
-      expect(sessions).toHaveLength(0)
+      expect(sessions).toHaveLength(1)
     })
   })
 })

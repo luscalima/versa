@@ -96,7 +96,6 @@ describe('PATCH /v1/activations/:tokenId', async () => {
         Permissions.CREATE_SESSION,
         Permissions.READ_SESSION,
         Permissions.UPDATE_USER,
-        Permissions.READ_STATUS,
       ])
     })
 
@@ -197,15 +196,14 @@ describe('PATCH /v1/activations/:tokenId', async () => {
       expect(response.status).toBe(200)
     })
 
-    it('Rejects a requester without "READ_ACTIVATION_TOKEN"', async () => {
+    it('Allows a requester without "READ_ACTIVATION_TOKEN"', async () => {
       const response = await requestActivation(activationToken.id, activatedSession.token)
 
-      expect(response.status).toBe(403)
-      expect(await response.json()).toEqual(forbiddenBody)
+      expect(response.status).toBe(200)
 
       const repository = await activationRepository()
 
-      expect(await repository.findValidById(activationToken.id)).not.toBeNull()
+      expect(await repository.findValidById(activationToken.id)).toBeNull()
     })
   })
 

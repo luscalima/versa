@@ -191,7 +191,7 @@ describe('POST /v1/users', async () => {
       },
     }
 
-    it('Rejects an activated user without "CREATE_USER" permission', async () => {
+    it('Rejects an activated user', async () => {
       const { session } = await dynamicMocks.createActivatedUserWithSession({
         username: 'ActivatedRequester',
         email: 'activated.requester@example.com',
@@ -209,7 +209,7 @@ describe('POST /v1/users', async () => {
       expect(await repository.findByEmail(userPayload.email)).toBeNull()
     })
 
-    it('Rejects an inactive user that only holds "READ_ACTIVATION_TOKEN"', async () => {
+    it('Rejects an inactive user', async () => {
       const requester = await dynamicMocks.createUser(
         {
           username: 'InactiveRequester',

@@ -6,7 +6,9 @@ import { NativeHasherAdapter } from '~~/server/infra/adapters/nativeHasherAdapte
 import { ActivationService } from '~~/server/modules/activation/activationService'
 import { NodemailerMailAdapter } from '~~/server/infra/adapters/nodemailerMailAdapter'
 import { KnexActivationRepository } from '~~/server/infra/repositories/knexActivationRepository'
+import { can } from '~~/server/modules/authorization/authorization'
 import { Permissions } from '~~/server/modules/authorization/permissions'
+import type { User } from '~~/server/modules/users/user'
 
 export const userSchema = z.object({
   username: z.string().nonempty().trim(),
@@ -15,7 +17,16 @@ export const userSchema = z.object({
   permissions: z.array(z.nativeEnum(Permissions)).optional(),
 })
 
-export default defineRouteHandler(requirePermissions([Permissions.CREATE_USER]), async event => {
+export default defineRouteHandler(async event => {
+  const authorizationResult = can(Permissions.CREATE_USER, {
+    subject: event.context.user,
+    resource: event.context.user as unknown as User,
+  })
+
+  if (authorizationResult.isErr()) {
+    return authorizationResult.error
+  }
+
   const payload = await useValidateBody(event, userSchema, 'User creation validation failed.')
 
   if (payload.isErr()) {
