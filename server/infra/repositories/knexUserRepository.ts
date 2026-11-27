@@ -4,6 +4,16 @@ import { User } from '~~/server/modules/users/user'
 import type { UserRepository } from '~~/server/modules/users/userRepository'
 import { useModelProps } from '~~/server/utils/useModelProps'
 
+const USER_COLUMNS = [
+  'id',
+  'username',
+  'email',
+  'password',
+  'permissions',
+  'createdAt',
+  'updatedAt',
+]
+
 export class KnexUserRepository implements UserRepository {
   private readonly table = 'users'
 
@@ -11,6 +21,7 @@ export class KnexUserRepository implements UserRepository {
 
   async findByUsername(username: string): Promise<User | null> {
     const findResult = await this.db(this.table)
+      .select(...USER_COLUMNS)
       .whereRaw('LOWER(username) = ?', username.toLowerCase())
       .first()
 
@@ -25,6 +36,7 @@ export class KnexUserRepository implements UserRepository {
 
   async findByEmail(email: string): Promise<User | null> {
     const findResult = await this.db(this.table)
+      .select(...USER_COLUMNS)
       .whereRaw('LOWER(email) = ?', email.toLowerCase())
       .first()
 
@@ -38,7 +50,10 @@ export class KnexUserRepository implements UserRepository {
   }
 
   async findById(id: string): Promise<User | null> {
-    const findResult = await this.db(this.table).where({ id }).first()
+    const findResult = await this.db(this.table)
+      .select(...USER_COLUMNS)
+      .where({ id })
+      .first()
 
     if (!findResult) {
       return null
@@ -50,7 +65,9 @@ export class KnexUserRepository implements UserRepository {
   }
 
   async save(user: User): Promise<User> {
-    const [saveResult] = await this.db(this.table).insert(useModelProps(user)).returning('*')
+    const [saveResult] = await this.db(this.table)
+      .insert(useModelProps(user))
+      .returning(USER_COLUMNS)
 
     return User.fromPersistence(saveResult)
   }
@@ -62,7 +79,7 @@ export class KnexUserRepository implements UserRepository {
         ...payload,
         updatedAt: this.db.fn.now(),
       })
-      .returning('*')
+      .returning(USER_COLUMNS)
 
     return User.fromPersistence(updateResult)
   }

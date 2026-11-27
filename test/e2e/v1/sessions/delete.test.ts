@@ -1,5 +1,12 @@
 import { fetch } from 'ofetch'
-import { api, clearDatabase, destroyDatabase, dynamicMocks, restoreDatabase } from '#test/helpers'
+import {
+  api,
+  clearDatabase,
+  destroyDatabase,
+  dynamicMocks,
+  restoreDatabase,
+  sessionRepository,
+} from '#test/helpers'
 import type { UserProps } from '#server/modules/users/user'
 import type { SessionProps } from '#server/modules/sessions/session'
 import setCookieParser from 'set-cookie-parser'
@@ -56,9 +63,10 @@ describe('DELETE /v1/sessions', async () => {
 
       expect(response.status).toBe(204)
 
-      const remainingSession = await dynamicMocks.getSession(otherSession.token)
+      const sessionRepo = await sessionRepository()
+      const remainingSession = await sessionRepo.findValid(otherSession.token)
 
-      expect(remainingSession).not.toBeUndefined()
+      expect(remainingSession).not.toBeNull()
     })
   })
 

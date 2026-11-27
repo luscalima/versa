@@ -3,7 +3,11 @@ import type { z, ZodType } from 'zod'
 import { ok, err } from 'neverthrow'
 import { badRequestError } from './errors'
 
-export async function useValidate<T extends ZodType>(event: H3Event, schema: T, message: string) {
+export async function useValidateBody<T extends ZodType>(
+  event: H3Event,
+  schema: T,
+  message: string,
+) {
   const body = await readBody(event)
   const result = schema.safeParse(body)
 

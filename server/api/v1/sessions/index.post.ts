@@ -1,9 +1,11 @@
 import { KnexUserRepository } from '~~/server/infra/repositories/knexUserRepository'
-import { useValidate } from '~~/server/utils/useValidate'
+import { useValidateBody } from '~~/server/utils/useValidateBody'
 import { NativeHasherAdapter } from '~~/server/infra/adapters/nativeHasherAdapter'
 import { SessionService } from '~~/server/modules/sessions/sessionService'
 import { KnexSessionRepository } from '~~/server/infra/repositories/knexSessionRepository'
 import { NativeGeneratorAdapter } from '~~/server/infra/adapters/nativeGeneratorAdapter'
+import { serializeSession, sessionResponseSchema } from '~~/server/modules/serialization/session'
+import { validateResponse } from '~~/server/utils/validateResponse'
 import { z } from 'zod'
 
 export const sessionSchema = z.object({
@@ -12,7 +14,11 @@ export const sessionSchema = z.object({
 })
 
 export default defineRouteHandler(async event => {
-  const payload = await useValidate(event, sessionSchema, 'User authentication validation failed.')
+  const payload = await useValidateBody(
+    event,
+    sessionSchema,
+    'User authentication validation failed.',
+  )
 
   if (payload.isErr()) {
     return payload.error
@@ -35,7 +41,7 @@ export default defineRouteHandler(async event => {
     return sessionResult.error
   }
 
-  const session = sessionResult.value.toDTO()
+  const session = validateResponse(sessionResponseSchema, serializeSession(sessionResult.value))
 
   setResponseStatus(event, 201)
   setCookie(event, 'session_id', session.token, {

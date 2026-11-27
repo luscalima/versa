@@ -1,15 +1,17 @@
 import { err, ok, type Result } from 'neverthrow'
+import { isPermission, Permissions } from '../authorization/permissions'
 
 export interface UserProps {
   readonly id: string
   readonly username: string
   readonly email: string
   readonly password: string
+  readonly permissions: Permissions[]
   readonly createdAt?: Date
   readonly updatedAt?: Date
 }
 
-export type CreateUserProps = Pick<UserProps, 'username' | 'email' | 'password'>
+export type CreateUserProps = Pick<UserProps, 'username' | 'email' | 'password' | 'permissions'>
 
 export type UserDTO = Omit<UserProps, 'password'>
 
@@ -18,7 +20,15 @@ export type UserError = {
   message: string
 }
 
-export class User {
+export interface UserContext extends Omit<UserProps, 'password' | 'createdAt' | 'updatedAt'> {
+  readonly isAnonymous: boolean
+}
+
+export const ANONYMOUS_USER_ID = 'anonymous'
+
+export class User implements UserContext {
+  readonly isAnonymous = false
+
   private constructor(private readonly props: UserProps) {}
 
   static create(props: CreateUserProps): Result<User, UserError> {
@@ -35,6 +45,7 @@ export class User {
       id: crypto.randomUUID(),
       username: props.username,
       password: props.password,
+      permissions: props.permissions,
       email: props.email.toLowerCase(),
     })
 
@@ -42,7 +53,10 @@ export class User {
   }
 
   static fromPersistence(props: UserProps): User {
-    const user = new User(props)
+    const user = new User({
+      ...props,
+      permissions: props.permissions.filter(isPermission),
+    })
 
     return user
   }
@@ -63,6 +77,10 @@ export class User {
     return this.props.password
   }
 
+  get permissions(): Permissions[] {
+    return this.props.permissions
+  }
+
   get createdAt(): Date | undefined {
     return this.props.createdAt
   }
@@ -75,9 +93,22 @@ export class User {
     return {
       id: this.id,
       username: this.username,
+      permissions: this.permissions,
       email: this.email,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     }
   }
+}
+
+export class AnonymousUser implements UserContext {
+  readonly id = ANONYMOUS_USER_ID
+  readonly username = ANONYMOUS_USER_ID
+  readonly email = ''
+  readonly permissions: Permissions[] = [
+    Permissions.CREATE_USER,
+    Permissions.CREATE_SESSION,
+    Permissions.READ_ACTIVATION_TOKEN,
+  ]
+  readonly isAnonymous = true
 }

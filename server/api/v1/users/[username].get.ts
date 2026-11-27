@@ -1,6 +1,8 @@
 import { NativeHasherAdapter } from '~~/server/infra/adapters/nativeHasherAdapter'
 import { KnexUserRepository } from '~~/server/infra/repositories/knexUserRepository'
+import { serializeUserForRequester } from '~~/server/modules/serialization/user'
 import { UserService } from '~~/server/modules/users/userService'
+import { validateResponse } from '~~/server/utils/validateResponse'
 
 export default defineRouteHandler(async event => {
   const username = getRouterParam(event, 'username')!
@@ -14,10 +16,9 @@ export default defineRouteHandler(async event => {
     return result.error
   }
 
+  const { schema, data } = serializeUserForRequester(result.value, event.context.user)
+
   setResponseStatus(event, 200)
 
-  return {
-    username: result.value.username,
-    email: result.value.email,
-  }
+  return validateResponse(schema, data)
 })

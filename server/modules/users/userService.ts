@@ -5,6 +5,7 @@ import type { UserRepository } from './userRepository'
 import { conflictError, notFoundError, unprocessableEntityError } from '~~/server/utils/errors'
 import type { AppError } from '~~/server/utils/errors'
 import type { HasherPort } from '../hasher/hasherPort'
+import { Permissions } from '../authorization/permissions'
 
 export class UserService {
   constructor(
@@ -12,9 +13,13 @@ export class UserService {
     private readonly hasher: HasherPort,
   ) {}
 
-  async create(payload: CreateUserProps): Promise<Result<User, AppError>> {
+  async create(payload: Omit<CreateUserProps, 'permissions'>): Promise<Result<User, AppError>> {
     const password = await this.hasher.hash(payload.password)
-    const transformedPayload = { ...payload, password }
+    const transformedPayload = {
+      ...payload,
+      password,
+      permissions: [Permissions.READ_ACTIVATION_TOKEN],
+    }
     const user = User.create(transformedPayload)
 
     if (user.isErr()) {

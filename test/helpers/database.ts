@@ -28,9 +28,27 @@ async function getDatabase(): Promise<Knex> {
   return db
 }
 
+function isMigrationLocked(error: unknown): boolean {
+  return error instanceof Error && error.name === 'MigrationLocked'
+}
+
+async function withMigrationLockRetry(operation: () => Promise<void>): Promise<void> {
+  const db = await getDatabase()
+
+  try {
+    await operation()
+  } catch (error) {
+    if (!isMigrationLocked(error)) throw error
+
+    await db.migrate.forceFreeMigrationsLock()
+    await operation()
+  }
+}
+
 export async function clearDatabase(): Promise<void> {
   const db = await getDatabase()
-  await db.migrate.rollback(undefined, true)
+
+  await withMigrationLockRetry(() => db.migrate.rollback(undefined, true))
 }
 
 export { getDatabase }
@@ -42,9 +60,15 @@ export async function destroyDatabase(): Promise<void> {
   }
 }
 
+export async function unlockDatabase(): Promise<void> {
+  const db = await getDatabase()
+  await db.migrate.forceFreeMigrationsLock()
+}
+
 export async function restoreDatabase(): Promise<void> {
   const db = await getDatabase()
-  await db.migrate.latest()
+
+  await withMigrationLockRetry(() => db.migrate.latest())
 }
 
 export async function rebuildDatabase(): Promise<void> {

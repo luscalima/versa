@@ -3,11 +3,13 @@ import {
   api,
   clearDatabase,
   destroyDatabase,
+  getDatabase,
   restoreDatabase,
   dynamicMocks,
   staticMocks,
 } from '#test/helpers'
 import type { UserProps } from '#server/modules/users/user'
+import { Permissions } from '#server/modules/authorization/permissions'
 import { SessionService } from '#server/modules/sessions/sessionService'
 import { version as uuidVersion } from 'uuid'
 import setCookieParser from 'set-cookie-parser'
@@ -16,7 +18,10 @@ describe('POST /v1/sessions', async () => {
   let user: UserProps
 
   beforeEach(async () => {
-    user = await dynamicMocks.createUser(null, { rebuild: true })
+    user = await dynamicMocks.createUser(
+      { permissions: [Permissions.CREATE_SESSION] },
+      { merge: true, rebuild: true },
+    )
   })
 
   afterAll(async () => {
@@ -155,6 +160,30 @@ describe('POST /v1/sessions', async () => {
 
         await restoreDatabase()
       })
+    })
+  })
+
+  describe('User without the required permission', () => {
+    it('creates and persists a session', async () => {
+      const unauthorizedUser = await dynamicMocks.createUser({
+        username: 'JaneDoe',
+        email: 'jane.doe@example.com',
+        password: 'Password123!',
+        permissions: [Permissions.READ_USER],
+      })
+
+      const response = await requestSessionCreation({
+        email: unauthorizedUser.email,
+        password: 'Password123!',
+      })
+
+      expect(response.status).toBe(201)
+      expect(await response.json()).toMatchObject({ userId: unauthorizedUser.id })
+
+      const db = await getDatabase()
+      const sessions = await db('sessions').where({ userId: unauthorizedUser.id })
+
+      expect(sessions).toHaveLength(1)
     })
   })
 })

@@ -4,6 +4,9 @@ import { faker } from '@faker-js/faker'
 import bcrypt from 'bcrypt'
 import type { SessionProps } from '#server/modules/sessions/session'
 import { SessionService } from '#server/modules/sessions/sessionService'
+import type { ActivationTokenProps } from '#server/modules/activation/activationToken'
+import { ActivationService } from '#server/modules/activation/activationService'
+import { Permissions } from '#server/modules/authorization/permissions'
 
 type DynamicActions = Partial<{
   rebuild: boolean
@@ -11,10 +14,25 @@ type DynamicActions = Partial<{
   unique: boolean
 }>
 
+type UserSeed = Partial<CreateUserProps> & Partial<{ permissions: Permissions[] }>
+
+export type SeededUser = UserProps & { permissions: Permissions[] }
+
+type ActivatedUserSeed = Omit<UserSeed, 'permissions'> & {
+  token?: string
+  extraPermissions?: Permissions[]
+}
+
+const ACTIVATED_PERMISSIONS: Permissions[] = [
+  Permissions.CREATE_SESSION,
+  Permissions.READ_SESSION,
+  Permissions.UPDATE_USER,
+]
+
 async function createUser(
-  payload?: Partial<CreateUserProps> | null,
+  payload?: UserSeed | null,
   actions?: DynamicActions,
-): Promise<UserProps> {
+): Promise<SeededUser> {
   let data = payload ? { ...payload } : staticMocks.user
 
   if (actions?.unique) {
@@ -64,6 +82,22 @@ async function createSession(
   return result
 }
 
+async function createActivationToken(
+  payload: Partial<ActivationTokenProps>,
+  actions?: DynamicActions,
+): Promise<ActivationTokenProps> {
+  const data = { ...staticMocks.activationToken, ...payload }
+
+  if (actions?.rebuild) {
+    await rebuildDatabase()
+  }
+
+  const db = await getDatabase()
+  const [result] = await db('user_activation_tokens').insert(data).returning('*')
+
+  return result
+}
+
 async function getSession(token = staticMocks.session.token): Promise<SessionProps> {
   const table = 'sessions'
   const db = await getDatabase()
@@ -71,9 +105,27 @@ async function getSession(token = staticMocks.session.token): Promise<SessionPro
   return db(table).where({ token }).first()
 }
 
+async function createActivatedUserWithSession(
+  payload?: ActivatedUserSeed,
+): Promise<{ user: SeededUser; session: SessionProps }> {
+  const { token, extraPermissions, ...userSeed } = payload ?? {}
+  const user = await createUser(
+    { ...userSeed, permissions: [...ACTIVATED_PERMISSIONS, ...(extraPermissions ?? [])] },
+    { merge: true },
+  )
+  const session = await createSession(
+    { userId: user.id, ...(token ? { token } : {}) },
+    { merge: true },
+  )
+
+  return { user, session }
+}
+
 export const dynamicMocks = {
   createUser,
   createSession,
+  createActivationToken,
+  createActivatedUserWithSession,
   getSession,
 }
 
@@ -82,6 +134,7 @@ export const staticMocks = {
     username: 'JohnDoe',
     email: 'john.doe@example.com',
     password: 'Password123!',
+    permissions: [] as Permissions[],
   },
   session: {
     token:
@@ -89,6 +142,12 @@ export const staticMocks = {
     // using a getter so that the result is affected by fake timers
     get expiresAt() {
       return new Date(Date.now() + SessionService.EXPIRATION_IN_MILLISECONDS)
+    },
+  },
+  activationToken: {
+    // using a getter so that the result is affected by fake timers
+    get expiresAt() {
+      return new Date(Date.now() + ActivationService.EXPIRATION_IN_MILLISECONDS)
     },
   },
 }
