@@ -12,7 +12,7 @@ export const userSchema = z.object({
   password: z.string().trim().nonempty().min(8).optional(),
 })
 
-export default defineRouteHandler(requirePermissions([Permissions.READ_USER]), async event => {
+export default defineRouteHandler(async event => {
   const username = getRouterParam(event, 'username')!
   const repository = new KnexUserRepository(useDatabase())
   const hasher = new NativeHasherAdapter()

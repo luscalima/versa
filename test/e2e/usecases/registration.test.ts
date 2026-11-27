@@ -355,7 +355,6 @@ describe('Account registration and activation flow', () => {
       expect(response.status).toBe(200)
       expect(await response.json()).toEqual({
         username: USER_PAYLOAD.username,
-        email: USER_PAYLOAD.email,
       })
     })
 
@@ -367,7 +366,6 @@ describe('Account registration and activation flow', () => {
       expect(response.status).toBe(200)
       expect(await response.json()).toEqual({
         username: USER_PAYLOAD.username,
-        email: USER_PAYLOAD.email,
       })
     })
   })
