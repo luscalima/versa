@@ -61,7 +61,6 @@ ${appUrl}/register/activate/${token}
       Permissions.CREATE_SESSION,
       Permissions.READ_SESSION,
       Permissions.UPDATE_USER,
-      Permissions.READ_STATUS,
     ])
 
     if (!token) {

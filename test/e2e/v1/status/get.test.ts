@@ -56,36 +56,31 @@ describe('GET /v1/status', async () => {
   })
 
   describe('Anonymous user', () => {
-    it('Rejects the request', async () => {
+    it('Returns only the public status fields', async () => {
       const response = await requestStatus()
 
-      expect(response.status).toBe(401)
-      expect(await response.json()).toEqual({
-        statusCode: 401,
-        message: 'Session is invalid or has expired',
-        data: {
-          code: 'UNAUTHORIZED',
-        },
-      })
+      expect(response.status).toBe(200)
+
+      const body = await response.json()
+
+      expect(new Date(body.updatedAt).toISOString()).toEqual(body.updatedAt)
+      expect(body).not.toHaveProperty('database')
     })
   })
 
   describe('Authenticated user', () => {
-    it('Rejects a user without "READ_STATUS" permission', async () => {
+    it('Hides the database data from a user without any status permission', async () => {
       const response = await requestStatus(forbiddenSession.token)
 
-      expect(response.status).toBe(403)
-      expect(await response.json()).toEqual({
-        statusCode: 403,
-        message: 'You do not have permission to perform this action',
-        data: {
-          code: 'ACCESS_DENIED',
-          missing: [Permissions.READ_STATUS],
-        },
-      })
+      expect(response.status).toBe(200)
+
+      const body = await response.json()
+
+      expect(new Date(body.updatedAt).toISOString()).toEqual(body.updatedAt)
+      expect(body).not.toHaveProperty('database')
     })
 
-    it('Allows a default activated user to read status but hides the database version', async () => {
+    it('Hides the database data from a user without "READ_STATUS_ALL" permission', async () => {
       const response = await requestStatus(commonUserSession.token)
 
       expect(response.status).toBe(200)
@@ -93,9 +88,7 @@ describe('GET /v1/status', async () => {
       const body = await response.json()
 
       expect(new Date(body.updatedAt).toISOString()).toEqual(body.updatedAt)
-      expect(body.database).not.toHaveProperty('version')
-      expect(body.database.maxConnections).toBeGreaterThan(0)
-      expect(body.database.openedConnections).toBeGreaterThanOrEqual(0)
+      expect(body).not.toHaveProperty('database')
     })
 
     it('Returns the database version to a user with "READ_STATUS_ALL" permission', async () => {

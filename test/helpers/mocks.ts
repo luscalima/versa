@@ -27,7 +27,6 @@ const ACTIVATED_PERMISSIONS: Permissions[] = [
   Permissions.CREATE_SESSION,
   Permissions.READ_SESSION,
   Permissions.UPDATE_USER,
-  Permissions.READ_STATUS,
 ]
 
 async function createUser(

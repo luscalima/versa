@@ -5,14 +5,14 @@ import { DatabaseService } from '~~/server/modules/database/databaseService'
 
 export type GetStatusResponse = {
   updatedAt: string
-  database: {
-    version?: string
+  database?: {
+    version: string
     maxConnections: number
     openedConnections: number
   }
 }
 
-export default defineRouteHandler(requirePermissions([Permissions.READ_STATUS]), async event => {
+export default defineRouteHandler(async event => {
   const repository = new KnexDatabaseRepository(useDatabase())
   const service = new DatabaseService(repository)
   const result = await service.getStatus()
@@ -26,10 +26,6 @@ export default defineRouteHandler(requirePermissions([Permissions.READ_STATUS]),
 
   return {
     updatedAt: new Date().toISOString(),
-    database: {
-      ...(canReadAllFields ? { version } : {}),
-      maxConnections,
-      openedConnections,
-    },
+    ...(canReadAllFields ? { database: { version, maxConnections, openedConnections } } : {}),
   }
 })

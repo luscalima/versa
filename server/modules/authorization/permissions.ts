@@ -8,7 +8,6 @@ export const Permissions = {
   UPDATE_USER_OTHERS: 'update:user:others',
   READ_MIGRATION: 'read:migration',
   RUN_MIGRATION: 'run:migration',
-  READ_STATUS: 'read:status',
   READ_STATUS_ALL: 'read:status:all',
 } as const
 

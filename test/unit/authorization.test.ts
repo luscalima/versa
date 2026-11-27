@@ -7,6 +7,11 @@ import {
 import { isPermission, Permissions } from '#server/modules/authorization/permissions'
 import { AnonymousUser, User, type UserContext } from '#server/modules/users/user'
 
+// TODO: verificar quais rotas podem ser públicas e remover o middleware de permissão
+// TODO: verificar quais rotas devem ser protegidas e adicionar o middleware (unir com a anterior)
+// TODO: ver se é possível utilizar o único método can do authorization, mater o mesmo comportamento e simplificar o código
+// TODO: fazer esquemática de validação de saída
+
 const user: UserContext = {
   id: 'user-id',
   username: 'JohnDoe',
@@ -218,17 +223,16 @@ describe('authorization', () => {
   })
 
   describe('status permissions', () => {
-    it('exposes "read:status"', () => {
-      expect(Permissions.READ_STATUS).toBe('read:status')
-    })
-
     it('exposes "read:status:all"', () => {
       expect(Permissions.READ_STATUS_ALL).toBe('read:status:all')
     })
 
-    it('recognizes both as valid permissions', () => {
-      expect(isPermission('read:status')).toBe(true)
+    it('recognizes it as a valid permission', () => {
       expect(isPermission('read:status:all')).toBe(true)
+    })
+
+    it('does not recognize the removed "read:status"', () => {
+      expect(isPermission('read:status')).toBe(false)
     })
   })
 
